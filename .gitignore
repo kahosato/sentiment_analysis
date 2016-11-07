@@ -40,4 +40,8 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# pycharm cache
 .cache/
+
+# pytest cache
+test/__pycache__/
