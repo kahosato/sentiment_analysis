@@ -45,3 +45,5 @@ fabric.properties
 
 # pytest cache
 test/__pycache__/
+
+*.pyc
