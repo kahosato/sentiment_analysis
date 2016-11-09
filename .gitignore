@@ -47,3 +47,4 @@ fabric.properties
 test/__pycache__/
 
 *.pyc
+sources/*.pdf
