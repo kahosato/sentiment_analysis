@@ -115,7 +115,6 @@ class Tokeniser(object):
                 to_return.append(token)
         return to_return
 
-
     @staticmethod
     def __split_d(tokens):
         pattern = re.compile(r"(.+)'d$")

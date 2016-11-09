@@ -11,7 +11,6 @@ from tokeniser import Tokeniser
 
 
 class TestSymbolicScore(TestCase):
-
     def setUp(self):
         self.lexicon = LexiconGenerator.generate(os.path.abspath("../resources/sent_lexicon"))
 

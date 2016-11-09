@@ -32,6 +32,7 @@ class Token(object):
     def __repr__(self):
         return self.value
 
+
 class WordToken(Token):
     def __init__(self, word):
         super(WordToken, self).__init__()

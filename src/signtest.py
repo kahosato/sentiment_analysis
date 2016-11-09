@@ -11,7 +11,7 @@ def compute_significance_two_tails(success, total):
     const = pow(0.5, total)
     if success > (total / 2):
         success = total - success
-    return sum(map(lambda i : ncr(total, i) * const, xrange(0, success+1))) * 2
+    return sum(map(lambda i: ncr(total, i) * const, xrange(0, success + 1))) * 2
 
 
 def ncr(n, r):
