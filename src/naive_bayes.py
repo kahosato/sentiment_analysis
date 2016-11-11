@@ -13,35 +13,28 @@ class NaiveBayes:
         total_docs = sum(count_docs)
         p_c = map(lambda x: x / total_docs, count_docs)
         # array of array of counts
-        # count_words[word_index] = frequency in each class
-        count_words = []
-        # word -> index
-        word_indexes = {}
+        # count_words[token] = frequency in each class
+        count_words = {}
         # total words per class
         total_tokens = [0] * total_class
-        new_index = 0
         for i in xrange(0, total_class):
             for file in all_docs[i]:
                 tokens = Tokeniser.tokenise(file)
                 for token in tokens:
-                    index = 0
                     try:
-                        index = word_indexes[token]
+                        freq = count_words[token]
                     except KeyError:
-                        index = new_index
-                        word_indexes[token] = index
-                        count_words.append([0] * total_class)
-                        new_index += 1
-                    count_words[index][i] += 1
+                        freq = [0] * total_class
+                        count_words[token] = freq
+                    freq[i] += 1
                     total_tokens[i] += 1
         for count_word in count_words:
             for i in xrange(0, total_class):
                 count_word[i] /= total_tokens[i]
         self.count_docs = count_docs
         self.total_class = total_class
-        self.word_indexes = word_indexes
         self.total_tokens = total_tokens
-        self.vocab_size = len(word_indexes)
+        self.vocab_size = len(count_words)
         self.p_c = p_c
         self.p_f_c = count_words
 
@@ -53,8 +46,7 @@ class NaiveBayes:
             prob = 1
             for token in tokens:
                 try:
-                    word_index = self.word_indexes[token]
-                    prob *= self.p_f_c[word_index][i]
+                    prob *= self.p_f_c[token][i]
                 except KeyError:
                     # todo, smoothing
                     pass
