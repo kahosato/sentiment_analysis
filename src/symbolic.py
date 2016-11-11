@@ -1,3 +1,9 @@
+import os
+
+from signtest import compute_significance_two_tails
+from tokeniser import Tokeniser
+
+
 class LexiconGenerator(object):
     def __init__(self):
         pass
@@ -74,3 +80,51 @@ class SymbolicScore(object):
             except KeyError:
                 continue
         return score
+
+
+if __name__ == "__main__":
+    lex = LexiconGenerator.generate(os.path.abspath("../resources/sent_lexicon"))
+    pos_path = os.path.abspath("../data/POS")
+    pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
+    bin_win = 0
+    wei_win = 0
+    bin_correct = 0
+    wei_correct = 0
+    for pos_file in pos_files:
+        tokens = Tokeniser.tokenise(pos_file)
+        bin_score = SymbolicScore.compute_binary(tokens, lex)
+        wei_score = SymbolicScore.compute_weighted(tokens, lex)
+        if bin_score >= 0: bin_correct += 1
+        if wei_score >= 0: wei_correct += 1
+        # 0 : positive
+        # bin: positive, wei: negative
+        if bin_score >= 0 > wei_score: bin_win += 1
+        # bin: positive, wei: negative
+        elif bin_score < 0 <= wei_score: wei_win += 1
+        else:
+            bin_win += 0.5
+            wei_win += 0.5
+    neg_path = os.path.abspath("../data/NEG")
+    neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
+    for neg_file in neg_files:
+        tokens = Tokeniser.tokenise(neg_file)
+        bin_score = SymbolicScore.compute_binary(tokens, lex)
+        wei_score = SymbolicScore.compute_weighted(tokens, lex)
+        if bin_score < 0: bin_correct += 1
+        if wei_score < 0: wei_correct += 1
+        # bin: positive, wei: negative
+        if bin_score >= 0 > wei_score:
+            wei_win += 1
+        # bin: positive, wei: negative
+        elif bin_score < 0 <= wei_score:
+            bin_win += 1
+        else:
+            bin_win += 0.5
+            wei_win += 0.5
+    print "bin_sin: {}".format(bin_win)
+    print "wei_win: {}".format(wei_win)
+    print "bin got: {} cases right".format(bin_correct)
+    print "wei got: {} cases right".format(wei_correct)
+    bin_win = int(round(bin_win))
+    wei_win = int(round(wei_win))
+    print "significance: {}".format(compute_significance_two_tails(wei_win, bin_win + wei_win))

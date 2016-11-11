@@ -46,6 +46,7 @@ class PunctuationToken(Token):
     #     ".": Punctuation.period,
     #     ",": Punctuation.comma,
     #     ";": Punctuation.semicolon,
+    #     ";": Punctuation.colon,
     #     "!": Punctuation.exclamation,
     #     "'": Punctuation.apostrophe,
     #     "\"": Punctuation.quotation,

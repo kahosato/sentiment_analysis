@@ -21,7 +21,6 @@ class Tokeniser(object):
     def tokenise_sentence(line):
         tokens = filter(lambda token: token != "", line.split(" "))
         tokens = Tokeniser.__lower_start(tokens)
-        tokens = Tokeniser.__split_last_period(tokens)
         to_return = []
         for token in tokens:
             # i guess one could assume that they are mutually exclusive ?
@@ -41,11 +40,16 @@ class Tokeniser(object):
         split_tokens = [token]
         split_tokens = Tokeniser.__split_hyphen(split_tokens)
         split_tokens = Tokeniser.__split_slash(split_tokens)
+        split_tokens = Tokeniser.__split_comma(split_tokens)
+        split_tokens = Tokeniser.__split_left_bracket(split_tokens)
+        split_tokens = Tokeniser.__split_right_bracket(split_tokens)
         split_tokens = Tokeniser.__split_ll(split_tokens)
         split_tokens = Tokeniser.__split_nt(split_tokens)
         split_tokens = Tokeniser.__split_d(split_tokens)
         split_tokens = Tokeniser.__split_s(split_tokens)
         split_tokens = Tokeniser.__split_ve(split_tokens)
+        split_tokens = Tokeniser.__split_last_period(split_tokens)
+
         return split_tokens
 
     @staticmethod
@@ -87,6 +91,42 @@ class Tokeniser(object):
         for token in tokens:
             if pattern.match(token):
                 to_return += Tokeniser.__split_with_punctuation(token, "/")
+            else:
+                to_return.append(token)
+        return to_return
+
+    @staticmethod
+    def __split_comma(tokens):
+        pattern = re.compile(r".*,")
+        to_return = []
+        for token in tokens:
+            if pattern.match(token):
+                to_return += Tokeniser.__split_with_punctuation(token, ",")
+            else:
+                to_return.append(token)
+        return to_return
+
+    @staticmethod
+    def __split_left_bracket(tokens):
+        pattern = re.compile(r"([\(\[{\"])(.*)")
+        to_return = []
+        for token in tokens:
+            match = pattern.match(token)
+            if match:
+                to_return += [match.group(1), match.group(2)]
+            else:
+                to_return.append(token)
+        return to_return
+
+
+    @staticmethod
+    def __split_right_bracket(tokens):
+        pattern = re.compile(r"(.*)([\"\)\[{])")
+        to_return = []
+        for token in tokens:
+            match = pattern.match(token)
+            if match:
+                to_return += [match.group(1), match.group(2)]
             else:
                 to_return.append(token)
         return to_return
@@ -153,7 +193,7 @@ class Tokeniser(object):
 
     @staticmethod
     def __lower_start(tokens):
-        pattern = re.compile(r"([A-Z])([a-z']*)")
+        pattern = re.compile(r"([A-Z])(.*)")
         match = pattern.match(tokens[0])
         if match:
             return [match.group(1).lower() + match.group(2)] + tokens[1:]
@@ -162,6 +202,12 @@ class Tokeniser(object):
 
     @staticmethod
     def __split_last_period(tokens):
-        if tokens[-1][-1] == ".":
-            return tokens[:-1] + [tokens[-1][:-1], "."]
-        return tokens
+        pattern = re.compile(r"(.+)([\?\!\.;:]+)$")
+        to_return = []
+        for token in tokens:
+            match = pattern.match(token)
+            if match:
+                to_return += [match.group(1), match.group(2)]
+            else:
+                to_return.append(token)
+        return to_return
