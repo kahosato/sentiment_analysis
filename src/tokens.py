@@ -21,6 +21,9 @@ class Token(object):
             return self.value == other.value
         return False
 
+    def __hash__(self):
+        return self.value.__hash__()
+
     def __str__(self):
         return self.value
 
