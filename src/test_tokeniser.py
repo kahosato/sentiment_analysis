@@ -1,4 +1,5 @@
-import sys, os
+import os
+import sys
 
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../src')
@@ -22,15 +23,17 @@ class TestTokeniser(TestCase):
 
     def test_tokenise_comma(self):
         cases = {
-            "I, for one.": [WordToken("i"), PunctuationToken(","), WordToken("for"), WordToken("one"), PunctuationToken(".")]
+            "I, for one.": [WordToken("i"), PunctuationToken(","), WordToken("for"), WordToken("one"),
+                            PunctuationToken(".")]
         }
         for input, expected in cases.iteritems():
             assert Tokeniser.tokenise_sentence(input) == expected
 
     def test_tokenise_bracket(self):
         cases = {
-            "(I, for one.)": [PunctuationToken("("), WordToken("i"), PunctuationToken(","), WordToken("for"), WordToken("one"),
-                            PunctuationToken("."), PunctuationToken(")")]
+            "(I, for one.)": [PunctuationToken("("), WordToken("i"), PunctuationToken(","), WordToken("for"),
+                              WordToken("one"),
+                              PunctuationToken("."), PunctuationToken(")")]
         }
         for input, expected in cases.iteritems():
             assert Tokeniser.tokenise_sentence(input) == expected
@@ -138,7 +141,8 @@ class TestTokeniser(TestCase):
         cases = {
             "I have a Ph.D.": [WordToken("i"), WordToken("have"), WordToken("a"), WordToken("Ph.D"),
                                PunctuationToken(".")],
-            "Make U.K. great again.": [WordToken("make"), WordToken("U.K"), PunctuationToken("."), WordToken("great"), WordToken("again"),
+            "Make U.K. great again.": [WordToken("make"), WordToken("U.K"), PunctuationToken("."), WordToken("great"),
+                                       WordToken("again"),
                                        PunctuationToken(".")]
         }
         for input, expected in cases.iteritems():

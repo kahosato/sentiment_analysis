@@ -1,11 +1,6 @@
 import os
 from unittest import TestCase
 
-# type=weaksubj len=1 word1=agilely pos1=adverb stemmed1=n priorpolarity=positive
-# type=weaksubj len=1 word1=agility pos1=noun stemmed1=n priorpolarity=positive
-# type=strongsubj len=1 word1=agitate pos1=verb stemmed1=y priorpolarity=negative
-# type=strongsubj len=1 word1=agitated pos1=adj stemmed1=n priorpolarity=negative
-# type=strongsubj len=1 word1=agitation pos1=noun stemmed1=n priorpolarity=negative
 from symbolic import LexiconGenerator, SymbolicScore
 from tokeniser import Tokeniser
 

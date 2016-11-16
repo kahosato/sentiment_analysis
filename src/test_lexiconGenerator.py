@@ -15,4 +15,3 @@ class TestLexiconGenerator(TestCase):
         assert lex["agreeable"] == LexiconEntry(1, 1, "agreeable", "anypos", True, 1)
         # type=strongsubj len=1 word1=covet pos1=verb stemmed1=y priorpolarity=both
         assert lex["covet"] == LexiconEntry(1, 1, "covet", "verb", True, 0)
-

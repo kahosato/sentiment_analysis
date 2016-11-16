@@ -1,5 +1,3 @@
-import numpy as np
-
 from tokeniser import Tokeniser
 
 
@@ -55,7 +53,5 @@ class NaiveBayes:
                 best_class = i
                 best_prob = prob
         return best_class
-    # p(c) -> count of documents classified as c / all docs
-    # p(f|c) -> count of f in document c / total words in the document classified as c
-
-
+        # p(c) -> count of documents classified as c / all docs
+        # p(f|c) -> count of f in document c / total words in the document classified as c

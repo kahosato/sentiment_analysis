@@ -1,8 +1,3 @@
-from enum import Enum
-
-from util import accepts
-
-
 class TokenFactory(object):
     def __init__(self):
         pass

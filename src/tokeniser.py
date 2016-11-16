@@ -118,7 +118,6 @@ class Tokeniser(object):
                 to_return.append(token)
         return to_return
 
-
     @staticmethod
     def __split_right_bracket(tokens):
         pattern = re.compile(r"(.*)([\"\)\[{])")
