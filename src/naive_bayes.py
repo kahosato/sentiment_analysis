@@ -1,13 +1,16 @@
 import os
 
+import crossvalidation
 from tokeniser import Tokeniser
+
 
 class NaiveBayes(object):
     __smooth_constant = 1
 
-    def __init__(self, training_docs, args={"smooth":1}):
+    # todo: training_docs
+    def train(self, training_docs, class_count, params={"smooth": 1}):
         """all_docs: all_docs[class_index] = array of paths to a document classified as class_index"""
-        self.__smooth_constant = args["smooth"]
+        self.__smooth_constant = params["smooth"]
         # p(c) -> count of documents classified as c / all docs
         # p(f|c) ->
         # count of f in document c + smooth
@@ -51,6 +54,20 @@ class NaiveBayes(object):
         self.classes_count = len(training_docs)
         self.p_c = p_c
 
+    def __init__(self):
+        self.total_tokens = []
+        self.vocabs = []
+        self.vocab_sizes = []
+        self.classes_count = 0
+        self.p_c = []
+
+    def reset(self):
+        self.total_tokens = []
+        self.vocabs = []
+        self.vocab_sizes = []
+        self.classes_count = 0
+        self.p_c = []
+
     def classify(self, file):
         tokens = list(Tokeniser.tokenise(file))
         best_prob = 0
@@ -89,3 +106,11 @@ class NaiveBayes(object):
                 best_class = i
                 best_prob = prob
         return best_class
+
+
+if __name__ == "__main__":
+    pos_path = os.path.abspath("../data/POS")
+    pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
+    neg_path = os.path.abspath("../data/NEG")
+    neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
+    print crossvalidation.crossvalidation([pos_files, neg_files], NaiveBayes.__init__)
