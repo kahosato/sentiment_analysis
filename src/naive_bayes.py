@@ -2,13 +2,12 @@ import os
 
 from tokeniser import Tokeniser
 
-
-class NaiveBayes:
+class NaiveBayes(object):
     __smooth_constant = 1
 
-    def __init__(self, training_docs, smooth=1):
+    def __init__(self, training_docs, args={"smooth":1}):
         """all_docs: all_docs[class_index] = array of paths to a document classified as class_index"""
-        self.__smooth_constant = smooth
+        self.__smooth_constant = args["smooth"]
         # p(c) -> count of documents classified as c / all docs
         # p(f|c) ->
         # count of f in document c + smooth
