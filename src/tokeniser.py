@@ -13,9 +13,11 @@ class Tokeniser(object):
     def tokenise(file):
         with open(file) as f:
             for line in f:
-                tokens = Tokeniser.tokenise_sentence(line)
-                for token in tokens:
-                    yield token
+                line = line.split("\n")[0]
+                if line:
+                    tokens = Tokeniser.tokenise_sentence(line)
+                    for token in tokens:
+                        yield token
 
     @staticmethod
     def tokenise_sentence(line):
@@ -27,7 +29,7 @@ class Tokeniser(object):
             split_tokens = map(Tokeniser.__normalise, Tokeniser.__split_token(token))
             to_return += split_tokens
         factory = TokenFactory()
-        return map(factory.create, to_return)
+        return map(factory.create, filter(lambda x: x, to_return))
 
     @staticmethod
     def __normalise(token):
