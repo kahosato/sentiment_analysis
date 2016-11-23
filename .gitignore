@@ -257,3 +257,6 @@ TSWLatexianTemp*
 /auto/*
 .DS_Store
 
+report/baseline/baseline.pdf
+
+*.swp
