@@ -1,0 +1,26 @@
+\begin{table}[]
+\centering
+\caption{Classification rate}
+\label{tab:crate}
+\begin{tabular}{|c|c|c|}
+\hline
+Binary & Weighted & NB     \\ \hline
+61.9\% & 64.2\%   & 82.1\% \\ \hline
+\end{tabular}
+\end{table}
+\begin{table}[]
+\centering
+\caption{Comparison between classifiers}
+\label{tab:comp}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{} & Binary                            & Weighted                          & NB        \\ \hline
+Binary    & \textbf{}                         & \textbf{}                         & \textbf{} \\ \hline
+Weighted  & \textbf{==}                       & \textbf{}                         & \textbf{} \\ \hline
+NB        & \textbf{\textgreater\textgreater} & \textbf{\textgreater\textgreater} & \textbf{} \\ \hline
+\end{tabular}
+\end{table}
+The table \ref{tab:crate} shows the classification rate for each classifier. Note that the classification rate for the Naive Bayes classifier is the mean of 10 results from each fold in 10-fold cross validation.
+From this result, the Naive Bayes classifier seems to largely outperform the symbolic classifiers.
+The table \ref{tab:comp} shows the result of two-tailed sign test, where $==$ marks $p >= 0.01$, $>$ marks $0.01 > p >= 0.005$ and  $>>$ marks $0.005 > p$.
+From this, it is concluded that the Naive Bayes classifier is significantly better than the symbolic classifiers, whose performance is comparable to each other.

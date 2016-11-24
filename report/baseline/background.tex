@@ -5,7 +5,7 @@
 Let $SLex$ be a lexicon where $SLex[w_i]$ returns the sentiment score associated with $w_i$. Then functions $S_{binary}$ or $S_{weighted}$ which take a sequence of words are defined as follows.
 \begin{align*}
 S_{binary}(w_1 ... w_n) &= \sum\limits_{i=1}^{n}sgn(SLex[w_i])\\
-S_{weighted}(w_1 ... w_n) &= \sum\limits_{i=1}^{n}SLex[w_i]\\
+S_{weighted}(w_1 ... w_n) &= \sum\limits_{i=1}^{n}SLex[w_i]
 \end{align*}
 In the symbolic approach, a sequence of words $w_1 ... w_n$ can be classified as positive or negative according to the sign of $S_{binary}(w_1 ... w_n)$ and $S_{weighted}(w_1 ... w_n)$. 
 \end{definition}
