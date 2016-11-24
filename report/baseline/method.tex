@@ -25,11 +25,12 @@ Then, the following rules are applied sequentially to each token in the list.
 \end{itemize}
 Note that all the punctuations are kept in the resulting tokens.
 \subsection{Cross Validation}
-% put all the documents in one array, shuffle them and split into n
-% non deterministic
-
+I use k-fold cross validation to evaluate and compare the performance of models.
+The list of all the documents are {\em randomly} partitioned into $k$ equal-sized fold.
+The model is tested on each fold after being trained on the remaining $k-1$ folds.
 \subsection{Symbolic Approach}
 \subsubsection{Sentiment Score}
+I use the magnitude of $1$ for a word marked ``strong'' and $0.5$ for ``weak''. For words marked ``neutral'' or ``both'' I assign the sentiment score of $0$.
 \subsection{Naive Bayes Classifier}
 \subsection{features}
 % no stemming, no stoplist
