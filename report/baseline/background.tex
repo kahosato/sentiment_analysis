@@ -27,6 +27,7 @@ P_{NB}(c|f) = \frac{P(c)\prod_{i=1}^{n}P(f_i|c)}{P(f)}
 \end{align*}
 When comparing $P_{NB}(c|f)$ for a given $f$, $P(f)$ is a constant which can be ignored. Therefore the definition of Naive Bayes Classifier used in \cite{pang2002thumbs} is as follows.
 \begin{definition}[Naive Bayes Classifier]
+\label{def:2}
 Let $C$ be a set of possible classes. The Naive Bayes classifer takes a feature vector $f$ and returns $\hat{c}$ which satisfies the following.
 \begin{align*}
 \hat{c} = \argmax_{c \in C}P(c|f) = \argmax_{c \in C}P(c)\prod_{i=1}^{n}P(f_i|c)
