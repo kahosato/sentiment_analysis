@@ -27,7 +27,8 @@ The model is tested on each fold after being trained on the remaining $k-1$ fold
 \subsubsection{Sentiment Score}
 I use the magnitude of $1$ for a word marked ``strong'' and $0.5$ for ``weak''. For words marked ``neutral'' or ``both'' I assign the sentiment score of $0$.
 \subsection{Naive Bayes Classifier}
-\subsection{features}
-% no stemming, no stoplist
-%unigram
+\subsection{Features}
+I use unigrams without stemming or stoplist.
+They are admittedly very simple, which I believe is appropriate for a baseline system.
 \subsection{Smoothing}
+For the smoothing constant, I use 1 as in \cite{pang2002thumbs}.
