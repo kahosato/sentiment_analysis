@@ -2,7 +2,7 @@ import os
 
 from signtest import compute_significance_two_tails
 from tokeniser import Tokeniser
-
+from stemming.porter2 import stem
 
 class LexiconGenerator(object):
     sentiment_score = {
@@ -65,26 +65,29 @@ class SymbolicScore(object):
         pass
 
     @staticmethod
-    def compute_binary(tokens, lexicon):
+    def compute(tokens, lexicon, bin=False, stemmed=False):
         score = 0
         for token in tokens:
             try:
                 entry = lexicon[token.value]
-                score += entry.sentiment_score
+                if bin:
+                    score += entry.sentiment_score
+                else:
+                    score += entry.sentiment_score * entry.weight
             except KeyError:
-                continue
+                if stemmed:
+                    try:
+                        entry = lexicon[stem(token.value)]
+                        if bin:
+                            score += entry.sentiment_score
+                        else:
+                            score += entry.sentiment_score * entry.weight
+                    except KeyError:
+                        continue
+                else:
+                    continue
         return score
 
-    @staticmethod
-    def compute_weighted(tokens, lexicon):
-        score = 0
-        for token in tokens:
-            try:
-                entry = lexicon[token.value]
-                score += entry.sentiment_score * entry.weight
-            except KeyError:
-                continue
-        return score
 
 
 if __name__ == "__main__":
@@ -98,8 +101,8 @@ if __name__ == "__main__":
     for pos_file in pos_files:
         # files not too long + use twice, so compute list
         tokens = list(Tokeniser.tokenise(pos_file))
-        bin_score = SymbolicScore.compute_binary(tokens, lex)
-        wei_score = SymbolicScore.compute_weighted(tokens, lex)
+        bin_score = SymbolicScore.compute(tokens, lex, bin=True, stemmed=True)
+        wei_score = SymbolicScore.compute(tokens, lex, bin=False, stemmed=True)
         if bin_score >= 0: bin_correct += 1
         if wei_score >= 0: wei_correct += 1
         # 0 : positive
@@ -117,8 +120,8 @@ if __name__ == "__main__":
     for neg_file in neg_files:
         # files not too long + use twice, so compute list
         tokens = list(Tokeniser.tokenise(neg_file))
-        bin_score = SymbolicScore.compute_binary(tokens, lex)
-        wei_score = SymbolicScore.compute_weighted(tokens, lex)
+        bin_score = SymbolicScore.compute(tokens, lex, bin=True, stemmed=True)
+        wei_score = SymbolicScore.compute(tokens, lex, bin=False, stemmed=True)
         if bin_score < 0: bin_correct += 1
         if wei_score < 0: wei_correct += 1
         # bin: positive, wei: negative
@@ -137,3 +140,17 @@ if __name__ == "__main__":
     bin_win = int(round(bin_win))
     wei_win = int(round(wei_win))
     print "significance: {}".format(compute_significance_two_tails(wei_win, bin_win + wei_win))
+    # without stemming
+    # bin_sin: 977.0
+    # wei_win: 1023.0
+    # bin got: 1238 cases right
+    # wei got: 1284 cases right
+    # significance: 0.3143044214799643840964767316
+
+    # with stemming
+    # bin_sin: 977.0
+    # wei_win: 1023.0
+    # bin got: 1247 cases right
+    # wei got: 1293 cases right
+    # significance: 0.3143044214799643840964767316
+
