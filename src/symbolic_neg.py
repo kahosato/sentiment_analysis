@@ -20,64 +20,44 @@ def compute_negation_list():
 def flip_punc(tokens, lexicon, neg_words, bin=True, stemmed=False):
     score = 0
     negated = False
+    neg_array = []
+    sentence = []
     for token in tokens:
+        sentence.append(token)
         if isinstance(token, PunctuationToken):
+            neg_array.append(False)
+            if token == PunctuationToken("."):
+                score += compute_score_sentence(sentence, neg_array, lexicon, bin, stemmed)
+                sentence = []
+                neg_array = []
             negated = False
-            continue
-        if token.value in neg_words:
+        elif token.value in neg_words:
+            neg_array.append(False)
             negated = not negated
-            continue
-        try:
-            entry = lexicon[token.value]
-            weight = negated and -1 or 1
-            if bin:
-                score += entry.sentiment_score * weight
-            else:
-                score += entry.sentiment_score * entry.weight * weight
-        except KeyError:
-            if stemmed:
-                try:
-                    entry = lexicon[stem(token.value)]
-                    weight = negated and -1 or 1
-                    if bin:
-                        score += entry.sentiment_score * weight
-                    else:
-                        score += entry.sentiment_score * entry.weight * weight
-                except KeyError:
-                    continue
-            continue
+        else:
+            neg_array.append(negated)
     return score
 
 
 def flip_prev(tokens, lexicon, neg_words, bin=True, stemmed=False):
     score = 0
     negated = False
+    neg_array = []
+    sentence = []
     for token in tokens:
-        if isinstance(token, PunctuationToken):
+        sentence.append(token)
+        if token == PunctuationToken("."):
+            neg_array.append(False)
+            score += compute_score_sentence(sentence, neg_array, lexicon, bin, stemmed)
+            neg_array = []
+            sentence = []
             negated = False
             continue
         if token.value in neg_words:
-            negated = not negated
-            continue
-        try:
-            entry = lexicon[token.value]
-            weight = negated and -1 or 1
-            if bin:
-                score += entry.sentiment_score * weight
-            else:
-                score += entry.sentiment_score * entry.weight * weight
-        except KeyError:
-            if stemmed:
-                try:
-                    entry = lexicon[stem(token.value)]
-                    weight = negated and -1 or 1
-                    if bin:
-                        score += entry.sentiment_score * weight
-                    else:
-                        score += entry.sentiment_score * entry.weight * weight
-                except KeyError:
-                    continue
-        finally:
+            neg_array.append(False)
+            negated = True
+        else:
+            neg_array.append(negated)
             negated = False
     return score
 
@@ -195,10 +175,11 @@ if __name__ == "__main__":
     # significance: 0.7543114188928754012459104498
 
     # prev
-    # bin_sin: 979.0
-    # wei_win: 1021.0
-    # bin got: 1271 cases right (0.474)
-    # wei got: 1313 cases right
+    # prev b ns won: 978.0
+    # prev w ns won: 1022.0
+    # method1 got: 1279 cases right
+    # method2 got: 1323 cases right
+    # significance: 0.3362977202320874537223706582
 
     # punc + stem
     # bin_win: 986.0
