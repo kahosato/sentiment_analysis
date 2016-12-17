@@ -62,6 +62,39 @@ def flip_prev(tokens, lexicon, neg_words, bin=True, stemmed=False):
     return score
 
 
+def flip_after_x(tokens, lexicon, neg_words, scope_size=1, bin=True, stemmed=False):
+    score = 0
+    negated = False
+    neg_array = []
+    sentence = []
+    scope_index = 0
+    for token in tokens:
+        sentence.append(token)
+        if token == PunctuationToken("."):
+            neg_array.append(False)
+            score += compute_score_sentence(sentence, neg_array, lexicon, bin, stemmed)
+            neg_array = []
+            sentence = []
+            scope_index = 0
+            negated = False
+            continue
+        if token.value in neg_words:
+            neg_array.append(False)
+            negated = True
+            scope_index = 0
+        else:
+            if negated and scope_index < scope_size:
+                neg_array.append(True)
+            else:
+                neg_array.append(False)
+            if negated:
+                scope_index += 1
+                if scope_index >= scope_size:
+                    negated = False
+                    scope_index = 0
+    return score
+
+
 def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
     assert len(tokens) == len(neg_array)
     score = 0
@@ -87,12 +120,14 @@ def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
     return score
 
 
-scope_dict = {'punc': flip_punc, 'prev': flip_prev, 'noneg': SymbolicScore.compute}
+scope_dict = {'punc': flip_punc, 'prev': flip_prev, 'noneg': SymbolicScore.compute, 'x': flip_after_x}
 
 
 def compute_score_document(tokens, lex, method, neg_words):
     if method[0] == "noneg":
         return scope_dict[method[0]](tokens, lex, bin=method[1] == "b", stemmed=method[2] == "s")
+    if method[0] == "x":
+        return scope_dict[method[0]](tokens, lex, neg_words, bin=method[1] == "b", stemmed=method[2] == "s", scope_size=int(method[3]))
     else:
         return scope_dict[method[0]](tokens, lex, neg_words, bin=method[1] == "b", stemmed=method[2] == "s")
 
