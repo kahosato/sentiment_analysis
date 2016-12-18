@@ -3,10 +3,10 @@ import sys
 
 from stemming.porter2 import stem
 
+from negation import compute_neg_punc, compute_neg_after_x
 from signtest import compute_significance_two_tails
 from symbolic import LexiconGenerator, SymbolicScore
 from tokeniser import Tokeniser
-from tokens import PunctuationToken
 
 
 def compute_negation_list():
@@ -16,50 +16,13 @@ def compute_negation_list():
             list.append(word.rstrip())
     return list
 
-#
-# def flip_punc(tokens, lexicon, neg_words, bin=True, stemmed=False):
-#     score = 0
-#     negated = False
-#     neg_array = []
-#     sentence = []
-#     for token in tokens:
-#         sentence.append(token)
-#         if isinstance(token, PunctuationToken):
-#             neg_array.append(False)
-#             if token == PunctuationToken("."):
-#                 score += compute_score_sentence(sentence, neg_array, lexicon, bin, stemmed)
-#                 sentence = []
-#                 neg_array = []
-#             negated = False
-#         elif token.value in neg_words:
-#             neg_array.append(False)
-#             negated = not negated
-#         else:
-#             neg_array.append(negated)
-#     return score
-
 
 def flip_punc(tokens, lexicon, neg_words, bin=True, stemmed=False):
     return compute_score_document(tokens, compute_neg_punc(tokens, neg_words), lexicon, bin, stemmed)
 
 
-def compute_neg_punc(tokens, neg_words):
-    negated = False
-    neg_array = []
-    for token in tokens:
-        if isinstance(token, PunctuationToken):
-            neg_array.append(False)
-            negated = False
-        elif token.value in neg_words:
-            neg_array.append(False)
-            negated = not negated
-        else:
-            neg_array.append(negated)
-    return neg_array
-
-
 def compute_score_document(tokens, neg_array, lexicon, bin=True, stemmed=False):
-    assert len(tokens) == len(neg_array)
+    assert len(tokens) == len(neg_array), "{}, {}".format(len(tokens), len(neg_array))
     score = 0
     for i in xrange(0, len(tokens)):
         token = tokens[i]
@@ -83,60 +46,8 @@ def compute_score_document(tokens, neg_array, lexicon, bin=True, stemmed=False):
     return score
 
 
-def flip_prev(tokens, lexicon, neg_words, bin=True, stemmed=False):
-    score = 0
-    negated = False
-    neg_array = []
-    sentence = []
-    for token in tokens:
-        sentence.append(token)
-        if token == PunctuationToken("."):
-            neg_array.append(False)
-            score += compute_score_sentence(sentence, neg_array, lexicon, bin, stemmed)
-            neg_array = []
-            sentence = []
-            negated = False
-            continue
-        if token.value in neg_words:
-            neg_array.append(False)
-            negated = True
-        else:
-            neg_array.append(negated)
-            negated = False
-    return score
-
-
 def flip_after_x(tokens, lexicon, neg_words, scope_size=1, bin=True, stemmed=False):
-    score = 0
-    negated = False
-    neg_array = []
-    sentence = []
-    scope_index = 0
-    for token in tokens:
-        sentence.append(token)
-        if token == PunctuationToken("."):
-            neg_array.append(False)
-            score += compute_score_sentence(sentence, neg_array, lexicon, bin, stemmed)
-            neg_array = []
-            sentence = []
-            scope_index = 0
-            negated = False
-            continue
-        if token.value in neg_words:
-            neg_array.append(False)
-            negated = True
-            scope_index = 0
-        else:
-            if negated and scope_index < scope_size:
-                neg_array.append(True)
-            else:
-                neg_array.append(False)
-            if negated:
-                scope_index += 1
-                if scope_index >= scope_size:
-                    negated = False
-                    scope_index = 0
-    return score
+    return compute_score_document(tokens, compute_neg_after_x(tokens, neg_words, scope_size), lexicon, bin, stemmed)
 
 
 def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
@@ -164,7 +75,7 @@ def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
     return score
 
 
-scope_dict = {'punc': flip_punc, 'prev': flip_prev, 'noneg': SymbolicScore.compute, 'x': flip_after_x}
+scope_dict = {'punc': flip_punc, 'noneg': SymbolicScore.compute, 'x': flip_after_x}
 
 
 def apply_method(tokens, lex, method, neg_words):
@@ -207,6 +118,7 @@ def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex):
         wei_score = apply_method(tokens, lex, method2, neg_words)
         if bin_score >= 0: bin_correct += 1
         if wei_score >= 0: wei_correct += 1
+        print bin_score, wei_score
         # 0 : positive
         # bin: positive, wei: negative
         if bin_score >= 0 > wei_score:
@@ -221,7 +133,7 @@ def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex):
         # files not too long + use twice, so compute list
         bin_score = apply_method(tokens, lex, method1, neg_words)
         wei_score = apply_method(tokens, lex, method2, neg_words)
-
+        print bin_score, wei_score
         if bin_score < 0: bin_correct += 1
         if wei_score < 0: wei_correct += 1
         # bin: positive, wei: negative
