@@ -2,6 +2,7 @@ import os
 from decimal import Decimal
 
 import crossvalidation
+from tokens import PunctuationToken
 
 
 class NaiveBayes(object):
@@ -39,6 +40,8 @@ class NaiveBayes(object):
             vocab = vocabs[label]
             count_docs_per_class[label] += 1
             for token in tokens:
+                if isinstance(token, PunctuationToken):
+                    continue
                 freq_so_far = 0
                 try:
                     freq_so_far = vocab[token]
@@ -68,7 +71,7 @@ class NaiveBayes(object):
         self.classes_count = 0
         self.p_c = []
 
-    def classify(self, tokens):
+    def classify(self, tokens, params={}):
         best_prob = 0
         best_class = 0
         # token -> frequency in file
@@ -93,6 +96,8 @@ class NaiveBayes(object):
             w = self.vocab_sizes[i] + unseen_vocabs_count[i]
             for token in tokens:
                 try:
+                    if isinstance(token, PunctuationToken):
+                        continue
                     freq_in_c = self.vocabs[i][token]
                 except KeyError:
                     freq_in_c = 0
@@ -113,6 +118,6 @@ if __name__ == "__main__":
     pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
     neg_path = os.path.abspath("../data/NEG")
     neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
-    result = crossvalidation.crossvalidation([pos_files, neg_files], NaiveBayes())
+    result = crossvalidation.crossvalidation([pos_files[:100], neg_files[:100]], NaiveBayes())
     print result
     print sum(result) / len(result)
