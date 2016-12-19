@@ -1,11 +1,13 @@
 import os
 from decimal import Decimal
 
+import spacy
+
 import crossvalidation
 from negation import compute_neg_punc, compute_neg_after_x, compute_neg_direct_dep
 from symbolic_neg import compute_negation_list
 from tokens import PunctuationToken, WordToken
-
+import time
 
 class NaiveBayes(object):
     __smooth_constant = 1
@@ -39,80 +41,40 @@ class NaiveBayes(object):
         # vocabs[i][token] - 1 if unseen, increment if seen
         # vocab_sizes - increment for each unseen token
         # TODO HERE
-        if params["bulk"]:
-            all_tokens = []
-            for tokens, label in training_docs:
-                all_tokens += tokens
-            neg_array = params["neg_scope"](all_tokens, params["neg_words"], *params["scope_arg"])
-            token_index = 0
-            for tokens, label in training_docs:
-                vocab = vocabs[label]
-                count_docs_per_class[label] += 1
-                other_label = [l for l in xrange(0, classes_count) if l != label]
-                for i in xrange(0, len(tokens)):
-                    token = all_tokens[token_index]
-                    if isinstance(token, PunctuationToken):
-                        continue
-                    negated = neg_array[i]
-                    if negated:
-                        neg_token = token
-                        token = WordToken("NOT_{}".format(token.value))
-                    else:
-                        neg_token = WordToken("NOT_{}".format(token.value))
-                    freq_so_far = 0
-                    try:
-                        freq_so_far = vocab[token]
-                    except KeyError:
-                        vocab_sizes[label] += 1
-                    vocab[token] = freq_so_far + 1
-                    total_tokens[label] += 1
+        for tokens, label in training_docs:
+            vocab = vocabs[label]
+            count_docs_per_class[label] += 1
+            other_label = [l for l in xrange(0, classes_count) if l != label]
+            neg_array = params["neg_scope"](tokens, params["neg_words"], *params["scope_arg"])
+            assert len(tokens) == len(neg_array)
+            for i in xrange(0, len(tokens)):
+                token = tokens[i]
+                if isinstance(token, PunctuationToken):
+                    continue
+                negated = neg_array[i]
+                if negated:
+                    neg_token = token
+                    token = WordToken("NOT_{}".format(token.value))
+                else:
+                    neg_token = WordToken("NOT_{}".format(token.value))
+                freq_so_far = 0
+                try:
+                    freq_so_far = vocab[token]
+                except KeyError:
+                    vocab_sizes[label] += 1
+                vocab[token] = freq_so_far + 1
+                total_tokens[label] += 1
 
-                    # for l in other_label:
-                    #     other_vocab = vocabs[l]
-                    #     neg_freq_so_far = 0
-                    #     try:
-                    #         neg_freq_so_far = other_vocab[neg_token]
-                    #     except KeyError:
-                    #         vocab_sizes[l] += 1
-                    #     other_vocab[neg_token] = neg_freq_so_far + 1
-                    #     total_tokens[l] += 1
-                    token_index += 1
-            p_c = map(lambda x: x / float(total_docs), count_docs_per_class)
-        else:
-            for tokens, label in training_docs:
-                vocab = vocabs[label]
-                count_docs_per_class[label] += 1
-                other_label = [l for l in xrange(0, classes_count) if l != label]
-                neg_array = params["neg_scope"](tokens, params["neg_words"], *params["scope_arg"])
-                assert len(tokens) == len(neg_array)
-                for i in xrange(0, len(tokens)):
-                    token = tokens[i]
-                    if isinstance(token, PunctuationToken):
-                        continue
-                    negated = neg_array[i]
-                    if negated:
-                        neg_token = token
-                        token = WordToken("NOT_{}".format(token.value))
-                    else:
-                        neg_token = WordToken("NOT_{}".format(token.value))
-                    freq_so_far = 0
-                    try:
-                        freq_so_far = vocab[token]
-                    except KeyError:
-                        vocab_sizes[label] += 1
-                    vocab[token] = freq_so_far + 1
-                    total_tokens[label] += 1
-
-                    # for l in other_label:
-                    #     other_vocab = vocabs[l]
-                    #     neg_freq_so_far = 0
-                    #     try:
-                    #         neg_freq_so_far = other_vocab[neg_token]
-                    #     except KeyError:
-                    #         vocab_sizes[l] += 1
-                    #     other_vocab[neg_token] = neg_freq_so_far + 1
-                    #     total_tokens[l] += 1
-            p_c = map(lambda x: x / float(total_docs), count_docs_per_class)
+                # for l in other_label:
+                #     other_vocab = vocabs[l]
+                #     neg_freq_so_far = 0
+                #     try:
+                #         neg_freq_so_far = other_vocab[neg_token]
+                #     except KeyError:
+                #         vocab_sizes[l] += 1
+                #     other_vocab[neg_token] = neg_freq_so_far + 1
+                #     total_tokens[l] += 1
+        p_c = map(lambda x: x / float(total_docs), count_docs_per_class)
 
         self.total_tokens = total_tokens
         self.vocabs = vocabs
@@ -188,7 +150,9 @@ if __name__ == "__main__":
     pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
     neg_path = os.path.abspath("../data/NEG")
     neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
-    result = crossvalidation.crossvalidation([pos_files[:10], neg_files[:10]], NaiveBayes(), params={"smooth": 0.2, "neg_scope": compute_neg_direct_dep, "bulk": True, "scope_arg": [], "neg_words":compute_negation_list()})
+    nlp = spacy.load('en')
+    print "loaded"
+    result = crossvalidation.crossvalidation([pos_files, neg_files], NaiveBayes(), params={"smooth": 0.2, "neg_scope": compute_neg_direct_dep, "scope_arg": [nlp], "neg_words":compute_negation_list()})
     print result
     print sum(result) / len(result)
 

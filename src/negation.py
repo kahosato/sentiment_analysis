@@ -1,6 +1,8 @@
 import Queue
 
 import time
+
+import spacy
 from nltk import Tree
 from nltk.parse.stanford import StanfordDependencyParser
 
@@ -48,41 +50,36 @@ def compute_neg_after_x(tokens, neg_words, scope_size):
     return neg_array
 
 
-def compute_neg_direct_dep(tokens, neg_words):
-    dep_parser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
+def compute_neg_direct_dep(tokens, neg_words, nlp):
     sentence = []
     neg_array = []
-    sentences = []
-    for token in tokens:
-        sentence.append(token.value)
-        if token == PunctuationToken("."):
-            sentences.append(sentence)
-            sentence = []
-    print len(tokens)
-    print len(sentences)
-    start = time.time()
-    trees = map(lambda t: next(t).tree(), dep_parser.parse_sents(sentences[:50]))
-    print time.time() - start
-    assert len(trees) == len(sentences)
-    for i in xrange(0, len(sentences)):
-        tree = trees[i]
-        sentence = sentences[i]
-        negated = []
-        parent = tree.label()
-        queue = Queue.Queue()
-        queue.put((parent, tree))
-        while not queue.empty():
-            parent, current = queue.get()
-            if isinstance(current, Tree):
-                label = current.label()
-                for c in current:
-                    queue.put((label, c))
-            else:
-                label = current
-            if label in neg_words:
-                negated.append(parent)
-        for word in sentence:
-            neg_array.append(word.value in negated)
+    negated = []
+    old_tokenizer = nlp.tokenizer
+    # for i in xrange(0, len(tokens)):
+    #     token = tokens[i]
+    #     sentence.append(token)
+    #     if token in [PunctuationToken("."), PunctuationToken("?"), PunctuationToken("!")]:
+    #         u_sentence = lambda x: map(lambda t: unicode(t.value, "utf-8"), sentence)
+    #         nlp.tokenizer = lambda ts: old_tokenizer.tokens_from_list(u_sentence(ts))
+    #         text = unicode(" ".join(map(lambda t: t.value, sentence)), "utf-8")
+    #         doc = nlp(text)
+    #         for w in doc:
+    #             if w.text in neg_words:
+    #                 negated.append(w.head.i)
+    #         for j in xrange(0, len(sentence)):
+    #             neg_array.append(j in negated)
+    #         sentence = []
+    #         negated = []
+    u_tokens = lambda x: map(lambda t: unicode(t.value, "utf-8"), tokens)
+    nlp.tokenizer = lambda ts: old_tokenizer.tokens_from_list(u_tokens(ts))
+    text = unicode(" ".join(map(lambda t: t.value, tokens)), "utf-8")
+    doc = nlp(text)
+    for w in doc:
+        if w.text in neg_words:
+            negated.append(w.head.i)
+    for j in xrange(0, len(tokens)):
+        neg_array.append(j in negated)
+    nlp.tokenizer = old_tokenizer
     return neg_array
 
 

@@ -23,7 +23,7 @@ def crossvalidation(dataset, classifier, params={}, fold=10):
             classifier.train(train_set, class_count, params)
         else:
             classifier.train(train_set, class_count)
-        # correct = len(filter(lambda (data, label): classifier.classify(data, params=params) == label, test_set))
-        # classification_rate[i] = correct / float(len(test_set))
+        correct = len(filter(lambda (data, label): classifier.classify(data, params=params) == label, test_set))
+        classification_rate[i] = correct / float(len(test_set))
         start = last
     return classification_rate
