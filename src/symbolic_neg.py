@@ -1,9 +1,10 @@
 import os
 import sys
 
+import spacy
 from stemming.porter2 import stem
 
-from negation import compute_neg_punc, compute_neg_after_x
+from negation import compute_neg_punc, compute_neg_after_x, compute_neg_direct_dep, compute_neg_obj
 from signtest import compute_significance_two_tails
 from symbolic import LexiconGenerator, SymbolicScore
 from tokeniser import Tokeniser
@@ -19,6 +20,14 @@ def compute_negation_list():
 
 def flip_punc(tokens, lexicon, neg_words, bin=True, stemmed=False):
     return compute_score_document(tokens, compute_neg_punc(tokens, neg_words), lexicon, bin, stemmed)
+
+
+def flip_dep_1(tokens, lexicon, neg_words, nlp, bin=True, stemmed=False):
+    return compute_score_document(tokens, compute_neg_direct_dep(tokens, neg_words, nlp), lexicon, bin, stemmed)
+
+
+def flip_dep_obj(tokens, lexicon, neg_words, nlp, bin=True, stemmed=False):
+    return compute_score_document(tokens, compute_neg_obj(tokens, neg_words, nlp), lexicon, bin, stemmed)
 
 
 def compute_score_document(tokens, neg_array, lexicon, bin=True, stemmed=False):
@@ -75,15 +84,18 @@ def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
     return score
 
 
-scope_dict = {'punc': flip_punc, 'noneg': SymbolicScore.compute, 'x': flip_after_x}
+scope_dict = {'punc': flip_punc, 'noneg': SymbolicScore.compute, 'x': flip_after_x, 'nlp_flip_dep_1': flip_dep_1,
+              'nlp_flip_dep_obj': flip_dep_obj}
 
 
-def apply_method(tokens, lex, method, neg_words):
+def apply_method(tokens, lex, method, neg_words, nlp):
     if method[0] == "noneg":
         return scope_dict[method[0]](tokens, lex, bin=method[1] == "b", stemmed=method[2] == "s")
     if method[0] == "x":
         return scope_dict[method[0]](tokens, lex, neg_words, bin=method[1] == "b", stemmed=method[2] == "s",
                                      scope_size=int(method[3]))
+    if method[0][0:3] == "nlp":
+        return scope_dict[method[0]](tokens, lex, neg_words, nlp, bin=method[1] == "b", stemmed=method[2] == "s")
     else:
         return scope_dict[method[0]](tokens, lex, neg_words, bin=method[1] == "b", stemmed=method[2] == "s")
 
@@ -104,7 +116,7 @@ def gen_lex():
     return LexiconGenerator.generate(os.path.abspath("../resources/sent_lexicon"))
 
 
-def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex):
+def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex, nlp):
     method1 = method1_disc.split(" ")
     method2 = method2_disc.split(" ")
     neg_words = compute_negation_list()
@@ -114,11 +126,11 @@ def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex):
     wei_correct = 0
     for tokens in pos_files:
         # files not too long + use twice, so compute list
-        bin_score = apply_method(tokens, lex, method1, neg_words)
-        wei_score = apply_method(tokens, lex, method2, neg_words)
+        bin_score = apply_method(tokens, lex, method1, neg_words, nlp)
+        wei_score = apply_method(tokens, lex, method2, neg_words, nlp)
+
         if bin_score >= 0: bin_correct += 1
         if wei_score >= 0: wei_correct += 1
-        print bin_score, wei_score
         # 0 : positive
         # bin: positive, wei: negative
         if bin_score >= 0 > wei_score:
@@ -131,9 +143,8 @@ def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex):
             wei_win += 0.5
     for tokens in neg_files:
         # files not too long + use twice, so compute list
-        bin_score = apply_method(tokens, lex, method1, neg_words)
-        wei_score = apply_method(tokens, lex, method2, neg_words)
-        print bin_score, wei_score
+        bin_score = apply_method(tokens, lex, method1, neg_words, nlp)
+        wei_score = apply_method(tokens, lex, method2, neg_words, nlp)
         if bin_score < 0: bin_correct += 1
         if wei_score < 0: wei_correct += 1
         # bin: positive, wei: negative
@@ -157,9 +168,10 @@ def run_experiment(method1_disc, method2_disc, pos_files, neg_files, lex):
 
 
 if __name__ == "__main__":
+    nlp = spacy.load('en')
     method1_disc = sys.argv[1]
     method2_disc = sys.argv[2]
-    print run_experiment(method1_disc, method2_disc, gen_pos_tokens(), gen_neg_tokens(), gen_lex())
+    print run_experiment(method1_disc, method2_disc, gen_pos_tokens(), gen_neg_tokens(), gen_lex(), nlp)
     # punc
     # punc b ns won: 992.5
     # punc w ns won: 1007.5
@@ -180,3 +192,16 @@ if __name__ == "__main__":
     # bin got: 1322 cases right
     # wei got: 1350 cases right
     # significance: 0.5460282528675881653053042490
+
+    # flip_dep_1
+    # bin got: 1260 cases right
+    # wei got: 1307 cases right
+
+    # flip_dep_1
+    # bin method1 got: 1284 cases right
+    # wei method2 got: 1317 cases right
+
+    # flip_dobj
+    # bin got: 1294 cases right
+    # wei got: 1330 cases right
+    # significance: 0.4338555020454634998831505158

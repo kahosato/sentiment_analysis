@@ -1,9 +1,11 @@
 import time
 
+import spacy
+
 from symbolic_neg import run_experiment, gen_pos_tokens, gen_neg_tokens, gen_lex
 
 if __name__ == "__main__":
-    methods = ["punc", "noneg"]
+    methods = ["punc", "noneg", "nlp_flip_dep_1", "nlp_flip_dep_obj"]
     bin = ['b', 'w']
     stem = ['s', 'ns']
     exps = ["{} {} {}".format(m, b, s) for m in methods for b in bin for s in stem]
@@ -12,7 +14,10 @@ if __name__ == "__main__":
     pos = gen_pos_tokens()
     neg = gen_neg_tokens()
     lex = gen_lex()
+    nlp = spacy.load('en')
     with open("symb_result{}.txt".format(time.time()), 'w+') as f:
         for c in comb:
-            f.write(run_experiment(c[0], c[1], pos, neg, lex))
+            print "Running"
+            print c
+            f.write(run_experiment(c[0], c[1], pos, neg, lex, nlp))
             f.write("\n\n")
