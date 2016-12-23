@@ -5,6 +5,7 @@ import time
 import spacy
 from nltk import Tree
 from nltk.parse.stanford import StanfordDependencyParser
+from spacy.symbols import ccomp, dobj, acomp
 
 from tokens import PunctuationToken, TokenFactory
 
@@ -51,9 +52,11 @@ def compute_neg_after_x(tokens, neg_words, scope_size):
 
 
 def compute_neg_direct_dep(tokens, neg_words, nlp):
+    # [0.82, 0.78, 0.79, 0.795, 0.755, 0.8, 0.8, 0.795, 0.775, 0.795]
+    # 0.7905
     sentence = []
     neg_array = []
-    negated = []
+    negated = set()
     old_tokenizer = nlp.tokenizer
     # for i in xrange(0, len(tokens)):
     #     token = tokens[i]
@@ -76,7 +79,7 @@ def compute_neg_direct_dep(tokens, neg_words, nlp):
     doc = nlp(text)
     for w in doc:
         if w.text in neg_words:
-            negated.append(w.head.i)
+            negated.add(w.head.i)
     for j in xrange(0, len(tokens)):
         neg_array.append(j in negated)
     nlp.tokenizer = old_tokenizer
@@ -108,3 +111,29 @@ if __name__ == "__main__":
         if label in ["not", "any"]:
             negated.append(parent)
     print negated
+
+
+def compute_neg_obj(tokens, neg_words, nlp):
+    sentence = []
+    neg_array = []
+    negated = set()
+    old_tokenizer = nlp.tokenizer
+    u_tokens = lambda x: map(lambda t: unicode(t.value, "utf-8"), tokens)
+    nlp.tokenizer = lambda ts: old_tokenizer.tokens_from_list(u_tokens(ts))
+    text = unicode(" ".join(map(lambda t: t.value, tokens)), "utf-8")
+    doc = nlp(text)
+    for w in doc:
+        if w.text in neg_words:
+            negated.add(w.head.i)
+            for c in w.head.children:
+                if is_complement(c.dep):
+                    for c_dec in c.subtree:
+                        negated.add(c_dec.i)
+    for j in xrange(0, len(tokens)):
+        neg_array.append(j in negated)
+    nlp.tokenizer = old_tokenizer
+    return neg_array
+
+
+def is_complement(dep):
+    return dep in {ccomp, dobj, acomp}
