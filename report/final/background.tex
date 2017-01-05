@@ -1,0 +1,48 @@
+\subsection{Symbolic Approach}
+\cite{wilson2005recognizing} presents two simple approaches to sentiment analysis using a lexicon which maps a word to {\em sentiment score}. The sign of the sentiment score represents whether a word is associated with positive or negative document, and the magnitude of the score represents how strong the sentiment is. For instance, a word {\em disastrous} could have a negative score of high magnitude, and {\em good} could have a low and positive score. The classification can be done in two ways as shown in Definition \ref{def:1}.
+\begin{definition}[Symbolic approach]
+\label{def:1}
+Let $SLex$ be a lexicon where $SLex[w_i]$ returns the sentiment score associated with $w_i$. Then functions $S_{binary}$ or $S_{weighted}$ which take a sequence of words are defined as follows.
+\begin{align*}
+S_{binary}(w_1 ... w_n) &= \sum\limits_{i=1}^{n}sgn(SLex[w_i])\\
+S_{weighted}(w_1 ... w_n) &= \sum\limits_{i=1}^{n}SLex[w_i]
+\end{align*}
+In the symbolic approach, a sequence of words $w_1 ... w_n$ can be classified as positive or negative according to the sign of $S_{binary}(w_1 ... w_n)$ and $S_{weighted}(w_1 ... w_n)$. 
+\end{definition}
+\subsection{Naive Bayes Classifier}
+\cite{pang2002thumbs} presents how one may use Naive Bayes classifier for sentiment analysis. They frame this task as a classification problem where given a feature vector $f$ that represents a document, $\hat{c}$ among the set of classes $C$ such that
+\begin{align*}
+\hat{c} = \argmax_{c \in C}P(c|f)
+\end{align*}
+is chosen.
+%describe what we mean by feature ?
+ Applying Bayes' rule, $P(c|f)$ is
+\begin{align*}
+P(c|f) = \frac{P(c)P(f|c)}{P(f)}
+\end{align*}
+As it is not feasible to compute $P(c|f)$, they make {\em independence assumption}, which state that each component of $f$ is conditionally independent on class $c$ of the document.
+Therefore $P(c|f)$ simplifies to
+\begin{align*}
+P_{NB}(c|f) = \frac{P(c)\prod_{i=1}^{n}P(f_i|c)}{P(f)}
+\end{align*}
+When comparing $P_{NB}(c|f)$ for a given $f$, $P(f)$ is a constant which can be ignored. Therefore the definition of Naive Bayes Classifier used in \cite{pang2002thumbs} is as follows.
+\begin{definition}[Naive Bayes Classifier]
+\label{def:2}
+Let $C$ be a set of possible classes. The Naive Bayes classifer takes a feature vector $f$ and returns $\hat{c}$ which satisfies the following.
+\begin{align*}
+\hat{c} = \argmax_{c \in C}P(c|f) = \argmax_{c \in C}P(c)\prod_{i=1}^{n}P(f_i|c)
+\end{align*}
+\end{definition}
+\cite{pang2002thumbs} computes $P(c)$ and $P(f_i|c)$ using relative-frequency estimation with add-one smoothing from the training set. That is,
+\begin{align*}
+P(c) &= \frac{N_d(c)}{\sum\limits_{c \in C}^{}N_d(c)}\\
+P(f_i|c) &= \frac{N_c(f_i)+\kappa }{N_f(c) + \sum\limits_{w \in V} \kappa}
+\end{align*}
+where 
+\begin{itemize}
+\item $N_d(c)$ is the number of documents in class $c$
+\item $N_c(f_i)$ is the frequency of a feature $f_i$ in all the documents in class $c$
+\item $N_f(c)$ is the number of features in all the documents in class $c$
+\item $\kappa$ is the smoothing constant
+\item $V$ is the set of vocabulary
+\end{itemize}
