@@ -1,0 +1,16 @@
+In this section, we describe various scoping heuristics I experimented with.
+
+{\bf \texttt{punc}}\\
+In this heuristics, all the words after the negation term is regarded as negated, up to a punctuation. (e.g. \textit{I was \textless not\textgreater [happy with what the director did]\textsubscript{-}, but I liked the plot.})
+
+{\bf \texttt{after\_x}}\\
+In this heuristics, $x$ words after the negation term is regarded as negated, up to a period. (e.g. \textit{I was \textless not\textgreater [happy with the movie]\textsubscript{-}.} with $x \geq 4$.)
+
+The other two heuristics utilises the \emph{dependency structure} of the sentence. A dependency structure is a graph consists of \emph{dependency relations} drawn between a head and its dependants. For instance, \textit{I swim.} could be represented by a subject relation from \textit{swim} to \textit{I}.
+
+{\bf \texttt{dir\_dep}}\\
+In this heuristics, the head of the negation term in the dependency structure that represents the sentence. (e.g. \textit{I \textless barely\textgreater, though I took a coffee in the middle, [finished]\textsubscript{-} it.})
+
+{\bf \texttt{head\_obj}}\\
+In this heuristics, the head of the negation term and its subtrees, rooted at its object or its complement are negated. (e.g. \textit{I did \textless not\textgreater\ [think it was amazing]\textsubscript{-}, but people clearly loved it.}, as the head of \textit{not} is \textit{think} and \textit{think it was amazing} is a clausal complement of \textit{think})
+
