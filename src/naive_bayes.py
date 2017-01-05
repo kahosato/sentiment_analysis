@@ -1,8 +1,11 @@
 import os
 from decimal import Decimal
 
+from stemming.porter2 import stem
+
 import crossvalidation
-from tokens import PunctuationToken
+from tokeniser import Tokeniser
+from tokens import PunctuationToken, WordToken
 
 
 class NaiveBayes(object):
@@ -118,6 +121,8 @@ if __name__ == "__main__":
     pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
     neg_path = os.path.abspath("../data/NEG")
     neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
-    result = crossvalidation.crossvalidation([pos_files[:100], neg_files[:100]], NaiveBayes())
+    dataset = [pos_files, neg_files]
+    datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, 2) for data in dataset[label]]
+    result = crossvalidation.crossvalidation(datas, 2, "Baseline", NaiveBayes())
     print result
     print sum(result) / len(result)

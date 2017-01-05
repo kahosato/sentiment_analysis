@@ -2,14 +2,16 @@ import os
 from decimal import Decimal
 
 import spacy
+from stemming.porter2 import stem
 
 import crossvalidation
-from negation import compute_neg_punc, compute_neg_after_x, compute_neg_direct_dep
+from negation import compute_neg_punc, compute_neg_obj
 from symbolic_neg import compute_negation_list
+from tokeniser import Tokeniser
 from tokens import PunctuationToken, WordToken
-import time
 
-class NaiveBayes(object):
+
+class NaiveBayesNeg(object):
     __smooth_constant = 1
 
     # todo: training_docs
@@ -35,12 +37,22 @@ class NaiveBayes(object):
         # Array of vocabulary size for each class
         vocab_sizes = [0] * classes_count
 
-
         # populate
         # total_tokens[i] - increment for each token
         # vocabs[i][token] - 1 if unseen, increment if seen
         # vocab_sizes - increment for each unseen token
         # TODO HERE
+
+        if params["stemmed"]:
+            stemmed = []
+            for (tokens, label) in training_docs:
+                stemmed_tokens = []
+                for token in tokens:
+                    if isinstance(token, WordToken):
+                        token = WordToken(stem(token.value))
+                    stemmed_tokens.append(token)
+                stemmed.append((stemmed_tokens, label))
+            training_docs = stemmed
         for tokens, label in training_docs:
             vocab = vocabs[label]
             count_docs_per_class[label] += 1
@@ -64,16 +76,16 @@ class NaiveBayes(object):
                     vocab_sizes[label] += 1
                 vocab[token] = freq_so_far + 1
                 total_tokens[label] += 1
-
-                # for l in other_label:
-                #     other_vocab = vocabs[l]
-                #     neg_freq_so_far = 0
-                #     try:
-                #         neg_freq_so_far = other_vocab[neg_token]
-                #     except KeyError:
-                #         vocab_sizes[l] += 1
-                #     other_vocab[neg_token] = neg_freq_so_far + 1
-                #     total_tokens[l] += 1
+                if params["augment"]:
+                    for l in other_label:
+                        other_vocab = vocabs[l]
+                        neg_freq_so_far = 0
+                        try:
+                            neg_freq_so_far = other_vocab[neg_token]
+                        except KeyError:
+                            vocab_sizes[l] += 1
+                        other_vocab[neg_token] = neg_freq_so_far + 1
+                        total_tokens[l] += 1
         p_c = map(lambda x: x / float(total_docs), count_docs_per_class)
 
         self.total_tokens = total_tokens
@@ -106,8 +118,12 @@ class NaiveBayes(object):
         # count unseen words
         neg_array = params["neg_scope"](tokens, params["neg_words"], *params["scope_arg"])
         assert len(neg_array) == len(tokens)
+
         for j in xrange(0, len(tokens)):
             token = tokens[j]
+            if params["stemmed"]:
+                if isinstance(token, WordToken):
+                    token = WordToken(stem(token.value))
             if isinstance(token, PunctuationToken):
                 continue
             if neg_array[j]:
@@ -145,6 +161,7 @@ class NaiveBayes(object):
                 best_prob = prob
         return best_class
 
+
 if __name__ == "__main__":
     pos_path = os.path.abspath("../data/POS")
     pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
@@ -152,7 +169,12 @@ if __name__ == "__main__":
     neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
     nlp = spacy.load('en')
     print "loaded"
-    result = crossvalidation.crossvalidation([pos_files, neg_files], NaiveBayes(), params={"smooth": 0.2, "neg_scope": compute_neg_direct_dep, "scope_arg": [nlp], "neg_words":compute_negation_list()})
+    dataset = [pos_files, neg_files]
+    datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, 2) for data in dataset[label]]
+    result = crossvalidation.crossvalidation(datas, 2, "obj", NaiveBayesNeg(),
+                                             params={"smooth": 0.2, "neg_scope": compute_neg_obj, "scope_arg": [nlp],
+                                                     "neg_words": compute_negation_list(), "stemmed": False,
+                                                     "augment": False})
     print result
     print sum(result) / len(result)
 

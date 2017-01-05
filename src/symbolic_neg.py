@@ -88,6 +88,7 @@ scope_dict = {'punc': flip_punc, 'noneg': SymbolicScore.compute, 'x': flip_after
               'nlp_flip_dep_obj': flip_dep_obj}
 
 
+# just call compute_score_document directly
 def apply_method(tokens, lex, method, neg_words, nlp):
     if method[0] == "noneg":
         return scope_dict[method[0]](tokens, lex, bin=method[1] == "b", stemmed=method[2] == "s")

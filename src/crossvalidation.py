@@ -1,12 +1,18 @@
+import os
 import random
+import time
 
+import spacy
+
+from naive_bayes import NaiveBayes
+from naive_bayes_neg import NaiveBayesNeg
+from negation import compute_neg_punc, compute_neg_direct_dep, compute_neg_obj, compute_neg_after_x
 from signtest import compute_significance_two_tails
+from symbolic_neg import compute_negation_list
 from tokeniser import Tokeniser
 
 
-def crossvalidation(dataset, classifier, params={}, fold=10):
-    class_count = len(dataset)
-    datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, len(dataset)) for data in dataset[label]]
+def crossvalidation(datas, class_count, disc, classifier, params={}, fold=10):
     random.shuffle(datas)
     one_fold_length = len(datas) / fold
     fold_with_extra = len(datas) % fold
@@ -29,12 +35,16 @@ def crossvalidation(dataset, classifier, params={}, fold=10):
         classification_rate[i] = correct / float(len(test_set))
         start = last
         print "{}th fold over".format(i)
-    return classification_rate
+    result = ""
+    result += "{} CR: {}, AVG: {}\n".format(disc, classification_rate, sum(classification_rate)/ len(classification_rate))
+    result += "\n\n"
+    print result
+    return result
 
 
-def crossvalidation_compare(dataset, method1_disc, classifier_1, params_1, method2_disc, classifier_2, params_2, fold=10):
-    class_count = len(dataset)
-    datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, len(dataset)) for data in dataset[label]]
+# takes pre-precessed data - [(tokens, label)]
+def crossvalidation_compare(datas, class_count, method1_disc, classifier_1, params_1, method2_disc, classifier_2,
+                            params_2, fold=10):
     random.shuffle(datas)
     one_fold_length = len(datas) / fold
     fold_with_extra = len(datas) % fold
@@ -79,11 +89,14 @@ def crossvalidation_compare(dataset, method1_disc, classifier_1, params_1, metho
         win_1 = int(round(win_1))
         win_2 = int(round(win_2))
         significance[i] = compute_significance_two_tails(win_1, win_1 + win_2)
+        start = last
+
 
     result = ""
-    result += "{} CR: {}".format(method1_disc, classification_rate_1)
-    result += "{} CR: {}".format(method2_disc, classification_rate_2)
-    result += "Sig {}".format(significance)
+    result += "{} CR: {}, AVG: {}\n".format(method1_disc, classification_rate_1, sum(classification_rate_1)/ len(classification_rate_1))
+    result += "{} CR: {}, AVG: {}\n".format(method2_disc, classification_rate_2, sum(classification_rate_2)/ len(classification_rate_2))
+    result += "Sig {}\n".format(significance)
     result += "\n\n"
+    print result
 
     return result
