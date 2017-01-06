@@ -6,7 +6,7 @@ from stemming.porter2 import stem
 
 import crossvalidation
 from negation import compute_neg_punc, compute_neg_obj
-from symbolic_neg import compute_negation_list
+from symbolic_neg import compute_negation_list, compute_stopwords_list
 from tokeniser import Tokeniser
 from tokens import PunctuationToken, WordToken
 
@@ -18,6 +18,11 @@ class NaiveBayesNeg(object):
     def train(self, training_docs, classes_count, params={"smooth": 0.2, "neg_scope": compute_neg_punc, "bulk": False}):
         """all_docs: all_docs[class_index] = array of paths to a document classified as class_index"""
         self.__smooth_constant = params["smooth"]
+        try:
+            use_stopwords = params["stopwords"]
+        except KeyError:
+            use_stopwords = False
+        stopwords = compute_stopwords_list()
         # p(c) -> count of documents classified as c / all docs
         # p(f|c) ->
         # count of f in document c + smooth
@@ -63,6 +68,8 @@ class NaiveBayesNeg(object):
                 token = tokens[i]
                 if isinstance(token, PunctuationToken):
                     continue
+                if use_stopwords and token.value in stopwords:
+                        continue
                 negated = neg_array[i]
                 if negated:
                     neg_token = token
@@ -109,6 +116,11 @@ class NaiveBayesNeg(object):
         self.p_c = []
 
     def classify(self, tokens, params={"smooth": 0.2, "neg_scope": compute_neg_punc}):
+        try:
+            use_stopwords = params["stopwords"]
+        except KeyError:
+            use_stopwords = False
+        stopwords = compute_stopwords_list()
         best_prob = 0
         best_class = 0
         # token -> frequency in file
@@ -125,6 +137,8 @@ class NaiveBayesNeg(object):
                 if isinstance(token, WordToken):
                     token = WordToken(stem(token.value))
             if isinstance(token, PunctuationToken):
+                continue
+            if use_stopwords and token.value in stopwords:
                 continue
             if neg_array[j]:
                 token = WordToken("NOT_{}".format(token.value))
