@@ -34,11 +34,18 @@ if __name__ == "__main__":
             last = start + one_fold_length
         test_set = datas[start:last]
         train_set = datas[0:start] + datas[last:]
-        classifier.train(train_set, class_count)
-        for data, label in train_set:
+        classifier.train(train_set, class_count, params={"smooth": 0})
+        for data, label in test_set:
             nb_result = classifier.classify(data)
-            bin_result = SymbolicScore.compute_binary(data, lex) >= 0 and 0 or 1
-            win_result = SymbolicScore.compute_weighted(data, lex) >= 0 and 0 or 1
+            if SymbolicScore.compute(data, lex, bin=True, stemmed=False) >= 0:
+                bin_result = 0
+            else:
+                bin_result = 1
+            if SymbolicScore.compute(data, lex, bin=False, stemmed=False) >= 0:
+                win_result = 0
+            else:
+                win_result = 1
+            print (label, nb_result, bin_result, win_result)
             if label == nb_result and label != bin_result:
                 nb_win_bin += 1
             if label != nb_result and label == bin_result:

@@ -171,12 +171,16 @@ if __name__ == "__main__":
     print "loaded"
     dataset = [pos_files, neg_files]
     datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, 2) for data in dataset[label]]
-    result = crossvalidation.crossvalidation(datas, 2, "obj", NaiveBayesNeg(),
-                                             params={"smooth": 0.2, "neg_scope": compute_neg_obj, "scope_arg": [nlp],
+    result = crossvalidation.crossvalidation_compare_proper(datas, 2, "stemmed", NaiveBayesNeg(),
+                                                     {"smooth": 0.2, "neg_scope": lambda x, y: [False] * len(x), "scope_arg": [],
+                                                     "neg_words": compute_negation_list(), "stemmed": True,
+                                                     "augment": False},
+                                                     "not stemmed", NaiveBayesNeg(), {"smooth": 0.2, "neg_scope": lambda x, y: [False] * len(x), "scope_arg": [],
                                                      "neg_words": compute_negation_list(), "stemmed": False,
                                                      "augment": False})
     print result
     print sum(result) / len(result)
+
 
     # 0.615 x 1 with adding NOT token to the other class
     # 0.7985 x 1 without
