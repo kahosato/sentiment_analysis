@@ -30,7 +30,7 @@ def compute_neg_after_x(tokens, neg_words, scope_size):
     neg_array = []
     scope_index = 0
     for token in tokens:
-        if token == PunctuationToken("."):
+        if token.value in [".", "?", "!"]:
             neg_array.append(False)
             scope_index = 0
             negated = False

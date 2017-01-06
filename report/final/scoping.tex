@@ -1,16 +1,25 @@
-In this section, we describe various scoping heuristics I experimented with.
+In this section, we describe scoping heuristics I experimented with. In this report, I refer to terms and tokens which are within the scope of negation as \emph{negated term} and \emph{negated tokens}, respectively. 
+
+One straight-forward approach is to use punctuations as an indicator of the end of a scope. This is based on the idea that punctuations, such as commas or quotation marks, are often used to mark the end of some ``logical unit''. Clearly, this is an approximation and one may easily think of cases where such heuristics would fail (e.g. \textit{I am not, you know, very happy}).
+
+Intuitively, a syntactic structure of the sentence should be more informative when determining the scope of the negation. In this experiment, I utilise \emph{dependency structure} of the sentence, as it was previously shown effective by \cite{jia2009effect}. A dependency structure is a graph consists of \emph{dependency relations} drawn between a head and its dependants. For instance, \textit{I swim.} could be represented by a subject relation from \textit{swim} to \textit{I}. 
+
+The following describes four heuristics I evaluated. Each heuristic is presented with an example, where negation terms are marked with \textit{\textless negation\textgreater}, and computed scopes of negation are marked with \textit{[negated terms]\textsubscript{-}}.
 
 {\bf \texttt{punc}}\\
-In this heuristics, all the words after the negation term is regarded as negated, up to a punctuation. (e.g. \textit{I was \textless not\textgreater [happy with what the director did]\textsubscript{-}, but I liked the plot.})
+With this heuristic, proposed by \cite{pang2002thumbs}, all the words after the negation term is regarded as negated, up to a punctuation.\\
+e.g.) \textit{I was \textless not\textgreater\ [happy with what the director did]\textsubscript{-}, but I liked the plot.}) 
 
 {\bf \texttt{after\_x}}\\
-In this heuristics, $x$ words after the negation term is regarded as negated, up to a period. (e.g. \textit{I was \textless not\textgreater [happy with the movie]\textsubscript{-}.} with $x \geq 4$.)
-
-The other two heuristics utilises the \emph{dependency structure} of the sentence. A dependency structure is a graph consists of \emph{dependency relations} drawn between a head and its dependants. For instance, \textit{I swim.} could be represented by a subject relation from \textit{swim} to \textit{I}.
+With this heuristic, proposed by \cite{hu2004mining}, $x$ words after the negation term is regarded as negated up to a punctuation which normally marks the end of a sentence, such as a period or exclamation mark.\\
+e.g.) \textit{I was \textless not\textgreater\ [happy, with, the, movie]\textsubscript{-}!.} with $x \geq 4$.
 
 {\bf \texttt{dir\_dep}}\\
-In this heuristics, the head of the negation term in the dependency structure that represents the sentence. (e.g. \textit{I \textless barely\textgreater, though I took a coffee in the middle, [finished]\textsubscript{-} it.})
+With this heuristic, only the head of the negation term in the dependency structure that represents the sentence is marked as negated.\\
+e.g.) \textit{I \textless barely\textgreater, though I took a coffee in the middle, [finished]\textsubscript{-} it.})
 
 {\bf \texttt{head\_obj}}\\
-In this heuristics, the head of the negation term and its subtrees, rooted at its object or its complement are negated. (e.g. \textit{I did \textless not\textgreater\ [think it was amazing]\textsubscript{-}, but people clearly loved it.}, as the head of \textit{not} is \textit{think} and \textit{think it was amazing} is a clausal complement of \textit{think})
+With this heuristic, the head of the negation term and its subtrees, rooted at its object or its complement are negated.\\
+e.g.) \textit{I did \textless not\textgreater\ [think it was amazing]\textsubscript{-}, but people clearly loved it.}\\
+In this sentence, the head of \textit{not} is \textit{think} and \textit{think it was amazing} is a clausal complement of \textit{think})
 

@@ -1,26 +1,111 @@
 \begin{table}[]
 \centering
-\caption{Classification rate}
+\caption{Classification Accuracy}
 \label{tab:crate}
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|c|c|c|c|}
 \hline
-Binary & Weighted & NB     \\ \hline
-61.9\% & 64.2\%   & 82.1\% \\ \hline
+Binary & Weighted & UNB & NB     \\ \hline
+61.9\% & 64.2\% & 50.4\%  & 80.1\% \\ \hline
 \end{tabular}
 \end{table}
 \begin{table}[]
 \centering
-\caption{Comparison between classifiers}
+\caption{Significance Results}
 \label{tab:comp}
-\begin{tabular}{|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
-\textbf{} & Binary                            & Weighted                          & NB        \\ \hline
-Binary    & \textbf{}                         & \textbf{}                         & \textbf{} \\ \hline
-Weighted  & \textbf{==}                       & \textbf{}                         & \textbf{} \\ \hline
-NB        & \textbf{\textgreater\textgreater} & \textbf{\textgreater\textgreater} & \textbf{} \\ \hline
+\textbf{} & Binary                            & Weighted    & UNB                      & NB        \\ \hline
+Binary    & \textbf{}                         & \textbf{}     & \textbf{}                    & \textbf{} \\ \hline
+Weighted  & \textbf{==}                       & \textbf{}  & \textbf{}                       & \textbf{} \\ \hline
+UNB        & \textbf{\textless\textless} & \textbf{\textless\textless}&\textbf{} & \textbf{} \\ \hline
+NB        & \textbf{\textgreater\textgreater} & \textbf{\textgreater\textgreater}&\textbf{\textgreater\textgreater} & \textbf{} \\ \hline
 \end{tabular}
 \end{table}
-The table \ref{tab:crate} shows the classification rate for each classifier. Note that the classification rate for the Naive Bayes classifier is the mean of 10 results from each fold in 10-fold cross validation.
-From this result, the Naive Bayes classifier seems to largely outperform the symbolic classifiers.
-The table \ref{tab:comp} shows the result of two-tailed sign test, where $==$ marks $p >= 0.01$, $>$ marks $0.01 > p >= 0.005$ and  $>>$ marks $0.005 > p$.
-From this, it is concluded that the Naive Bayes classifier is significantly better than the symbolic classifiers, whose performance is comparable to each other.
+\subsection{Baselines}
+The table \ref{tab:crate} shows the classification rate for each classifier. Binary stands for a binary symbolic approach, Weighted for a weighted symbolic approach, UNB for Naive Bayes classifier without smoothing and NB for Naive Bayes classifier with smoothing. Note that the classification rate for the Naive Bayes classifier is the mean of 10 results from each fold in 10-fold cross validation.
+
+The table \ref{tab:comp} shows the result of two-tailed sign test. Each cell contains a symbol for the result of test performed between classifiers read from the row and the column. $==$ marks $p >= 0.01$, $>$ or $<$ marks $0.01 > p >= 0.005$ and  $>>$ or $<<$ marks $0.005 > p$. The inequality should be read as if the classifier in the column is on the left and the classifier in the row  is on the right. For instance, $>>$ in the cell with the column NB and the row Binary should be read as: ``Naive Bayes classifier with smoothing is better than binary symbolic approach with a high statistical significance.''
+
+From this, I conclude that the Naive Bayes classifier with smoothing is significantly better than the symbolic classifiers, whose performance is statistically indistinguishable. Naive Bayes classifier without smoothing is significantly worse than other classifiers. This is because without smoothing all the document is assigned with~$0$ probability for a class if it contains a word which does not appear in the documents of the class in the test set. As it often happens that null probability is assigned to a document for both positive and negative class, one of the class is constantly chosen, resulting to the classification accuracy which is close to the proportion of the documents of the chosen class(i.e. 50\% with this dataset). I exclude Naive Bayes classifier without smoothing from the next sections.
+\subsection{Negation}
+In this section, I evaluate the effect of addressing negations present in the document. Specifically, I look at the classification accuracy of the classifiers which takes negation into account computed from 10-fold cross validation, and compare them with the corresponding baseline using two-tailed sign test.
+\subsubsection{Symbolic Approaches}
+\begin{table*}[t]
+\centering
+\caption{Classification Accuracy of Symbolic Approaches with Negation}
+\label{tab:symb-c}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+ & \texttt{punc}& \texttt{after\_1}& \texttt{after\_3}&  \texttt{after\_5} & \texttt{dir\_dep}& \texttt{head\_obj}   \\ \hline
+ Binary & 66.7\%& 63.9\% & 65.5\%  & 65.8\%  & 63.0\% & 64.8\%\\ \hline
+ Weighted & 67.9\% & 66.1\% & 66.2\%  & 67.0\% & 66.0\% & 65.4\% \\ \hline
+\end{tabular}
+\end{table*}
+\begin{table*}[t]
+\centering
+\caption{Significance Results of Symbolic Approaches with Negation}
+\label{tab:symb-s}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+ & \texttt{punc}& \texttt{after\_1}& \texttt{after\_3}&  \texttt{after\_5} & \texttt{dir\_dep}& \texttt{head\_obj}   \\ \hline
+ Binary & \textbf{==}& \textbf{==} & \textbf{==}  & \textbf{==}  & \textbf{==} & \textbf{==}\\ \hline
+ Weighted & \textbf{$\downarrow\downarrow$} & \textbf{$\downarrow\downarrow$}  & \textbf{$\downarrow\downarrow$}   & \textbf{$\downarrow\downarrow$}  &\textbf{$\downarrow\downarrow$}  & \textbf{$\downarrow\downarrow$} \\ \hline
+\end{tabular}
+\end{table*}
+Table \ref{tab:symb-c} shows the classification accuracy of the symbolic approaches which takes negation into consideration. The column indicates the type of symbolic approach, and the row indicates the heuristic used to compute the negation scope. Similarly, Table \ref{tab:symb-s} shows the result of the statistical test carried out to compare each classifier to the corresponding baseline. In this table, $\uparrow\uparrow$ and $\downarrow\downarrow$ indicates with significance $ 0.005 > p$ an improvement and deterioration respectively,  $\uparrow$ and $\downarrow$ indicates with significance $ 0.01 > p \geq 0.005$ an improvement and deterioration respectively and $==$ indicates no change with significance $p \geq 0.01$. Though there is a small improvement in the classification accuracy, I conclude that it is not statistically significant.
+\subsubsection{Naive Bayes}
+\begin{table*}[t]
+\centering
+\caption{Classification Accuracy of Naive Bayes Classifier with Negation}
+\label{tab:neg-n-c}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+ & \texttt{punc}& \texttt{after\_1}& \texttt{after\_3}&  \texttt{after\_5} & \texttt{dir\_dep}& \texttt{head\_obj}  \\ \hline
+ \texttt{simple} & 80.9\% & 79.8\% & 79.9\%  & 79.4\% & 79.6\% & 80.0\% \\ \hline
+\texttt{augmented} & 59.5\% & 61.7\% & 60.9\%  & 59.6\% & 61.6\% & 60.2\%  \\ \hline
+\end{tabular}
+\end{table*}
+\begin{table*}[t]
+\centering
+\caption{Significance Results of Naive Bayes Classifier with Negation}
+\label{tab:neg-n-c}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+ & \texttt{punc}& \texttt{after\_1}& \texttt{after\_3}&  \texttt{after\_5} & \texttt{dir\_dep}& \texttt{head\_obj}  \\ \hline
+ \texttt{simple} & \textbf{==}& \textbf{==} & \textbf{==}  & \textbf{==}  & \textbf{==} & \textbf{==}\\ \hline
+\texttt{augmented} & \textbf{$\downarrow$}& \textbf{$\downarrow$} & \textbf{$\downarrow$}  & \textbf{$\downarrow$}  & \textbf{$\downarrow$} & \textbf{$\downarrow$}\\ \hline
+\end{tabular}
+\end{table*}
+Table \ref{tab:neg-n-c} shows the classification accuracy of the Naive Bayes classifier with negations considered. The column indicates the strategy used to treat negated tokens, and the row indicates the heuristic used to compute the negation scope. Similarly, Table \ref{tab:symb-s} shows the result of the statistical test carried out to compare each classifier to the baseline Naive Bayes classifier with smoothing. With \texttt{simple} strategy, all the figures are lower than that of the baseline, aside from one for \texttt{punc}. However, none of changes is statistically significant. With \texttt{\texttt{augmented}} approach, all the figures are lower than that of the baseline, and the sign test shows that taking negation into account in this manner harms the performance of the classifier.
+\subsection{Analysis}
+\begin{table*}[t]
+\centering
+\caption{Classification Accuracy of \texttt{augmented} Naive Bayes Classifier with Stopwords}
+\label{tab:stop-c}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+ \texttt{punc}& \texttt{after\_1}& \texttt{after\_3}&  \texttt{after\_5} & \texttt{dir\_dep}& \texttt{head\_obj}   \\ \hline
+ 66.7\%& 69.1\% & 69.3\% & 70.0\%  & 70.3\% & 67.6\%\\ \hline
+
+\end{tabular}
+\end{table*}
+\begin{table*}[t]
+\centering
+\caption{Significance Results of \texttt{augmented} Naive Bayes Classifier with Stopwords}
+\label{tab:stop-s}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+ \texttt{punc}& \texttt{after\_1}& \texttt{after\_3}&  \texttt{after\_5} & \texttt{dir\_dep}& \texttt{head\_obj}   \\ \hline
+  \textbf{$\uparrow\uparrow$}& \textbf{$\uparrow\uparrow$} & \textbf{$\uparrow\uparrow$}  & \textbf{$\uparrow\uparrow$}  & \textbf{$\uparrow\uparrow$} & \textbf{$\uparrow\uparrow$}\\ \hline
+\end{tabular}
+\end{table*}
+For either baseline, it is hard to conclude whether a more sophisticated scoping heuristic will lead to a significant improvement to the baseline. In fact, the only heuristic which was close to give an improvement to a baseline was \texttt{punc}, whose improvement on the binary symbolic approach had a significance of $p = 0.035$, and it is arguably the most crude heuristic of all. This suggests that, even if the scoping was computed accurately for each negated term, we might not be able to improve the baseline systems, perhaps because negation occurs too rarely in the documents. As a result, the negated terms are overpowered by the normal terms and can not contribute to the classification. This would affect the Naive Bayes classifier more than the symbolic approaches, as not all words in the document in the symbolic approach contributes to the classification. 
+
+\texttt{augmented} was expected to offset this problem. However, as we saw it only degraded the performance. This is perhaps because many words which have no disambiguation capability created noise when they are negated, and those with disambiguation capability did not occur frequently enough to influence the overall classification. This could be potentially be solved by using a list of \emph{stopwords}, common words which do not normally have disambiguation capability, to filter the tokens. I confirmed this hypothesis by comparing \texttt{augmented} Naive Bayes classifier which ignores 32 words in a list presented in \cite{stopwords}.  Table \ref{tab:stop-c} shows the classification accuracy of the \texttt{augmented} Naive Bayes classifier with stopwords, and Table \ref{tab:stop-s} shows the significance results when it was compared with \texttt{augmented} Naive Bayes classifier without stopwords. As can be seen, a list of stopwords gives a significant improvement to \texttt{augmented} Naive Bayes classifier. Though this does not give an improvement to the baseline, it gives some insights to the underlying problem. Note that utilising stopwords did give a statistically significant improvement to other classifiers.
+
+One may avoid this problem which comes from the relatively low frequency of negation terms in a document by training a Naive Bayes classifier to classify the polarity of a sentence, rather than a whole document. The polarity of the document can be determined by aggregating the polarity of the sentence by, for instance, counting how many sentences were classified into each class. I did not take this approach as I can not assume that the sentences which are in the document of a positive class are all positive; this requires a dataset of sentences which are labeled with the polarity.
+
+Negation is just one example of \emph{valence shifters} terms that can change the semantic orientation or intensity of another term\cite{kennedy2006sentiment}. A difficulty with the treatment of valence shifters in symbolic approach is in determining their exact effect on other terms\cite{kennedy2006sentiment}. Recall that in this experiment, the sign of the semantic score of a term was flipped. This does not perfectly capture, for example, the effect of \textit{not} in \textit{not excellent}; \textit{excellent} represents a strong positive sentiment, but \textit{not excellent} does not convey a strong negative sentiment.
+
+All in all, treatment of negation in the polarity classification is not straight-forward and perhaps is impossible to solve by a good scoping heuristics alone. 
+

@@ -26,6 +26,7 @@ if __name__ == "__main__":
     nb_win_wei = 0
     bin_win = 0
     wei_win = 0
+    correct = 0
     for i in xrange(0, fold):
         classifier.reset()
         if i < fold_with_extra:
@@ -34,7 +35,7 @@ if __name__ == "__main__":
             last = start + one_fold_length
         test_set = datas[start:last]
         train_set = datas[0:start] + datas[last:]
-        classifier.train(train_set, class_count, params={"smooth": 0})
+        classifier.train(train_set, class_count, params={"smooth": 0.2})
         for data, label in test_set:
             nb_result = classifier.classify(data)
             if SymbolicScore.compute(data, lex, bin=True, stemmed=False) >= 0:
@@ -46,6 +47,8 @@ if __name__ == "__main__":
             else:
                 win_result = 1
             print (label, nb_result, bin_result, win_result)
+            if label == nb_result:
+                correct += 1
             if label == nb_result and label != bin_result:
                 nb_win_bin += 1
             if label != nb_result and label == bin_result:
@@ -59,5 +62,6 @@ if __name__ == "__main__":
     print nb_win_wei
     print bin_win
     print wei_win
+    print correct
     print "significance wei: {}".format(compute_significance_two_tails(wei_win, nb_win_wei + wei_win))
     print "significance bin: {}".format(compute_significance_two_tails(bin_win, bin_win + nb_win_bin))

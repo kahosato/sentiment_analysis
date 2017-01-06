@@ -2,33 +2,48 @@
 %- tokenisation
 %- 10-cross validation
 %	- randomise
-This section describes implementation choices made while replicating the methods described in Section \ref{sec:background}.
+This section describes various implementation choices I made in the experiment.
 \subsection{Tokenisation}
-In this section, the process of converting a input documents into a stream of tokens is described.
+\label{sec:tokenizer}
 A document is first split into sentences, which get tokenised separately.
-The first letter of a sentence is capitalised, and it gets split at the white spaces to give the initial list of tokens.
-Then, 11 rules are applied sequentially to each token in the list. Each rule is associated with a regular expression, and only if the token matches the pattern the rule gets applied. Most rules split at the punctuation which becomes its own token, with the following exceptions.
+The first letter of the sentence is converted to lower case, and the sentence is split at the white spaces which results in the initial list of tokens.
+Then, 11 rules are applied sequentially to each token in the list. Each rule is associated with a regular expression, and all the rules whose pattern matches the token are applied. Most rules split the token at a punctuation which becomes its own token (e.g. ``/'' in ``love/hate'' $\rightarrow$ [``love'', ``/'', ``hate'']), with the following exceptions.
 \begin{itemize}
-\item Do not split at hyphens if it contains non-alphabetical character.
+\item If the token contains non-alphabetical character, it is not split at hyphens.
 (e.g. ``long-term'' $\rightarrow$ [``long'', ``-'', ``term''], ``3-G21'' $\rightarrow$ [``3-G21''])
-\item Split ``'ll'' and add a token ``will'' instead.
+\item If the token is suffixed by ``'ll'', its prefix and ``will'' are added.
 (e.g. ``you'll'' $\rightarrow$ [``you'', ``will''])
-\item Split ``n't'' and add a token ``not'' instead.
+\item If the token is suffixed by ``n't'', its prefix and ``not'' are added.
 (e.g. ``don't'' $\rightarrow$ [``do'', ``not''])
-\item Split ``'ve'' and add a token ``have'' instead.
+\item If the token is suffixed by ``'ve'', its prefix and ``have'' are added.
 (e.g. ``you've'' $\rightarrow$ [``you'', ``have''])
+\item If the token is suffixed by ``'s'', its prefix and ``'s'' are added.
+(e.g. ``aunt's'' $\rightarrow$ [``aunt'', ``'s''])
 \end{itemize}
-Note that all the punctuations are kept in the resulting tokens.
 \subsection{Cross Validation}
-I use k-fold cross validation to evaluate and compare the performance of models.
+I use k-fold cross validation to evaluate and compare the performance of models, where models are tested on each fold after being trained on the remaining $k-1$ folds.
 The list of all the documents are {\em randomly} partitioned into $k$ equal-sized fold.
-The model is tested on each fold after being trained on the remaining $k-1$ folds.
 \subsection{Symbolic Approach}
 \subsubsection{Sentiment Score}
-I use the magnitude of $1$ for a word marked ``strong'' and $0.5$ for ``weak''. For words marked ``neutral'' or ``both'' I assign the sentiment score of $0$.
+I use the magnitude of~$1$ for a word marked ``strong'' and~$0.5$ for ``weak''. For words marked ``neutral'' or ``both'' I assign the sentiment score of~$0$.
 \subsection{Naive Bayes Classifier}
-\subsection{Features}
-I use unigrams without stemming or stoplist.
-They are admittedly very simple, which I believe is appropriate for a baseline system.
-\subsection{Smoothing}
-For the smoothing constant, I use 1 as in \cite{pang2002thumbs}.
+\subsubsection{Features}
+I use unigrams obtained from the tokens from the tokenizer described in Section \ref{sec:tokenizer}, without any further processing or filtering.
+\subsubsection{Smoothing}
+I evaluate Naive Bayes classifier both with and without smoothing. I chose $0.2$ for the smoothing constant.
+\subsection{Negation}
+\subsubsection{Negation Terms}
+The list of negation terms I used in this experiment is \textit{not}, \textit{never}, \textit{no}, \textit{n't}, \textit{less}, \textit{without}, \textit{barely}, \textit{hardly} and \textit{rarely}. These are the most common negation words, also utilised in~\citep{jia2009effect}.
+\subsubsection{Parser}
+I use \emph{spaCy}~\citep{spacy} in order to compute the dependency structure of each sentence. Though spaCy provides its own tokeniser, the tokens which are computed from the tokenizer described in Section \ref{sec:tokenizer} are used. I first experimented with Stanford Parser~\citep{stanford}. However, it runs extremely slow and was not appropriate for this task where the dependency graphs needed to be produced for each sentence in all the documents.
+\subsubsection{Negated Tokens in Symbolic Approach}
+The score for a negated token is obtained by multiplying~$-1$ to the score for its normal form. For instance, if a ``weak positive'' token is marked as negated, then it is assigned with a score of $-1$ in the binary symbolic approach, and $-0.5$ in weighted symbolic approach.
+\subsubsection{Negated Tokens in Naive Bayes Classifier}
+For Naive Bayes classifier, I experimented with two methods of treating negated tokens.
+
+{\bf \texttt{simple}}\\
+When encountering a token marked as negated, a new token is created by prefixing the term it represents with ``not\_'', and increment the count for the new token. For example, if a token ``good'' in a positive document is marked as negated, then a count for ``not\_good'' is incremented for the positive class.
+
+{\bf \texttt{augmented}}\\
+As stated before, it was plausible that the number of negated tokens would be too small to improve the classification. In order to mitigate this problem, we experimented with the approach proposed by \cite{narayanan2013fast}, where all the tokens in a document of a class contributes to the frequency of their negated form in the opposite class. For instance, if a token ``good'' appears in a positive document, then the count for ``not\_good'' is incremented for the negative class.
+

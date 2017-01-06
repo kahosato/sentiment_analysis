@@ -14,7 +14,18 @@ def compute_negation_list():
     list = []
     with open(os.path.abspath("../data/negation.txt")) as f:
         for word in f:
-            list.append(word.rstrip())
+            stripped = word.rstrip()
+            if stripped:
+                list.append(stripped)
+    return list
+
+def compute_stopwords_list():
+    list = []
+    with open(os.path.abspath("../data/stopwords.txt")) as f:
+        for word in f:
+            stripped = word.rstrip()
+            if stripped:
+                list.append(stripped)
     return list
 
 
