@@ -19,6 +19,7 @@ def compute_negation_list():
                 list.append(stripped)
     return list
 
+
 def compute_stopwords_list():
     list = []
     with open(os.path.abspath("../data/stopwords.txt")) as f:
@@ -69,6 +70,35 @@ def compute_score_document(tokens, neg_array, lexicon, bin=True, stemmed=False):
 def flip_after_x(tokens, lexicon, neg_words, scope_size=1, bin=True, stemmed=False):
     return compute_score_document(tokens, compute_neg_after_x(tokens, neg_words, scope_size), lexicon, bin, stemmed)
 
+
+class SymbolicClassifier(object):
+    def __init__(self):
+        pass
+
+    def train(self, training_docs, classes_count, params={}):
+        pass
+
+    def classify(self, tokens, params):
+        lexicon = params["lexicon"]
+        neg_array = params["neg_scope"](tokens, params["neg_words"], *params["scope_arg"])
+        bin = params["bin"]
+        assert len(tokens) == len(neg_array)
+        score = 0
+        for i in xrange(len(tokens)):
+            token = tokens[i]
+            neg_weight = neg_array[i] and -1 or 1
+            try:
+                entry = lexicon[token.value]
+                if bin:
+                    score += entry.sentiment_score * neg_weight
+                else:
+                    score += entry.sentiment_score * entry.weight * neg_weight
+            except KeyError:
+               continue
+        if score >= 0:
+            return 0
+        else:
+            return 1
 
 def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
     assert len(tokens) == len(neg_array)
