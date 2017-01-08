@@ -5,7 +5,7 @@ import spacy
 
 from crossvalidation import crossvalidation_compare_proper
 from naive_bayes_neg import NaiveBayesNeg
-from negation import compute_neg_punc, compute_neg_direct_dep, compute_neg_obj, compute_neg_after_x
+from negation import compute_neg_punc, compute_neg_dir_dep, compute_neg_head_obj, compute_neg_after_x
 from symbolic_neg import compute_negation_terms
 from tokeniser import Tokeniser
 
@@ -23,10 +23,10 @@ nlp = spacy.load('en')
 print "spacy loaded"
 
 # TODO rename methods as they are called in the report
-methods = [(compute_neg_punc, [], "punc"), (compute_neg_direct_dep, [nlp], "nlp_flip_dep_1"),
-           (compute_neg_obj, [nlp], "nlp_flip_dep_obj")]
+methods = [(compute_neg_punc, [], "punc"), (compute_neg_dir_dep, [nlp], "dir_dep"),
+           (compute_neg_head_obj, [nlp], "head_obj")]
 for i in xrange(1, 6, 2):
-    methods += [(compute_neg_after_x, [i], "x {}".format(i))]
+    methods += [(compute_neg_after_x, [i], "after_{}".format(i))]
 
 #
 negation_terms = compute_negation_terms()

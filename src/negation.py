@@ -51,7 +51,7 @@ def compute_neg_after_x(tokens, neg_words, scope_size):
     return neg_array
 
 
-def compute_neg_direct_dep(tokens, neg_words, nlp):
+def compute_neg_dir_dep(tokens, neg_words, nlp):
     # [0.82, 0.78, 0.79, 0.795, 0.755, 0.8, 0.8, 0.795, 0.775, 0.795]
     # 0.7905
     sentence = []
@@ -89,7 +89,7 @@ def compute_neg_direct_dep(tokens, neg_words, nlp):
 if __name__ == "__main__":
     tokens = map(TokenFactory.create, "I do not have any idea and I am not alright .".split(" "))
     print tokens
-    print compute_neg_direct_dep(tokens, ["not", "any"])
+    print compute_neg_dir_dep(tokens, ["not", "any"])
     dep_parser = StanfordDependencyParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
     # parse
     tree = next(dep_parser.parse("I do not have any idea and I am not alright.".split(" "))).tree()
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     print negated
 
 
-def compute_neg_obj(tokens, neg_words, nlp):
+def compute_neg_head_obj(tokens, neg_words, nlp):
     sentence = []
     neg_array = []
     negated = set()
