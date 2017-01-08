@@ -6,7 +6,7 @@ from stemming.porter2 import stem
 
 import crossvalidation
 from negation import compute_neg_punc, compute_neg_obj
-from symbolic_neg import compute_negation_list, compute_stopwords_list
+from symbolic_neg import compute_negation_terms, compute_stopwords_list
 from tokeniser import Tokeniser
 from tokens import PunctuationToken, WordToken
 
@@ -48,16 +48,16 @@ class NaiveBayesNeg(object):
         # vocab_sizes - increment for each unseen token
         # TODO HERE
 
-        if params["stemmed"]:
-            stemmed = []
-            for (tokens, label) in training_docs:
-                stemmed_tokens = []
-                for token in tokens:
-                    if isinstance(token, WordToken):
-                        token = WordToken(stem(token.value))
-                    stemmed_tokens.append(token)
-                stemmed.append((stemmed_tokens, label))
-            training_docs = stemmed
+        # if params["stemmed"]:
+        #     stemmed = []
+        #     for (tokens, label) in training_docs:
+        #         stemmed_tokens = []
+        #         for token in tokens:
+        #             if isinstance(token, WordToken):
+        #                 token = WordToken(stem(token.value))
+        #             stemmed_tokens.append(token)
+        #         stemmed.append((stemmed_tokens, label))
+        #     training_docs = stemmed
         for tokens, label in training_docs:
             vocab = vocabs[label]
             count_docs_per_class[label] += 1
@@ -133,9 +133,9 @@ class NaiveBayesNeg(object):
 
         for j in xrange(0, len(tokens)):
             token = tokens[j]
-            if params["stemmed"]:
-                if isinstance(token, WordToken):
-                    token = WordToken(stem(token.value))
+            # if params["stemmed"]:
+            #     if isinstance(token, WordToken):
+            #         token = WordToken(stem(token.value))
             if isinstance(token, PunctuationToken):
                 continue
             if use_stopwords and token.value in stopwords:
@@ -187,10 +187,10 @@ if __name__ == "__main__":
     datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, 2) for data in dataset[label]]
     result = crossvalidation.crossvalidation_compare_proper(datas, 2, "stemmed", NaiveBayesNeg(),
                                                      {"smooth": 0.2, "neg_scope": lambda x, y: [False] * len(x), "scope_arg": [],
-                                                     "neg_words": compute_negation_list(), "stemmed": True,
+                                                     "neg_words": compute_negation_terms(), "stemmed": True,
                                                      "augment": False},
                                                      "not stemmed", NaiveBayesNeg(), {"smooth": 0.2, "neg_scope": lambda x, y: [False] * len(x), "scope_arg": [],
-                                                     "neg_words": compute_negation_list(), "stemmed": False,
+                                                     "neg_words": compute_negation_terms(), "stemmed": False,
                                                      "augment": False})
     print result
     print sum(result) / len(result)
