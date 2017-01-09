@@ -34,8 +34,8 @@ def crossvalidation(datas, class_count, disc, classifier, params={}, fold=10):
 
 
 # takes pre-precessed data - [(tokens, label)]
-def crossvalidation_compare(datas, class_count, method1_disc, classifier_1, params_1, method2_disc, classifier_2,
-                            params_2, fold=10):
+def crossvalidation_compare_wrong(datas, class_count, method1_disc, classifier_1, params_1, method2_disc, classifier_2,
+                                  params_2, fold=10):
     random.shuffle(datas)
     one_fold_length = len(datas) / fold
     fold_with_extra = len(datas) % fold
@@ -92,7 +92,7 @@ def crossvalidation_compare(datas, class_count, method1_disc, classifier_1, para
 
     return result
 
-def crossvalidation_compare_proper(datas, class_count, method1_disc, classifier_1, params_1, method2_disc, classifier_2,
+def crossvalidation_compare(datas, class_count, method1_disc, classifier_1, params_1, method2_disc, classifier_2,
                             params_2, fold=10):
     random.shuffle(datas)
     one_fold_length = len(datas) / fold

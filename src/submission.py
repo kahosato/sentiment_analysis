@@ -3,7 +3,7 @@ import time
 
 import spacy
 
-from crossvalidation import crossvalidation_compare_proper
+from crossvalidation import crossvalidation_compare
 from naive_bayes_neg import NaiveBayesNeg
 from negation import compute_neg_punc, compute_neg_dir_dep, compute_neg_head_obj, compute_neg_after_x
 from symbolic import LexiconGenerator
@@ -51,20 +51,20 @@ with open("result{}.txt".format(time.time()), 'w+') as f:
     # baseline
     for ((name_1, c_1, param_1), (name_2, c_2, param_2)) in comb:
         print "{} vs {}".format(name_1, name_2)
-        f.write(crossvalidation_compare_proper(datas, 2, name_1, c_1, param_1, name_2, c_2, param_2, 10))
+        f.write(crossvalidation_compare(datas, 2, name_1, c_1, param_1, name_2, c_2, param_2, 10))
 
     # symbolic bin + negation
     for m in methods:
         print "Symbolic Binary"
         (b_n, b_c, b_p) = baselines[0]
         params = {"bin": True, "lexicon": lexicon, "neg_scope": m[0], "scope_arg": m[1], "neg_words": negation_terms}
-        f.write(crossvalidation_compare_proper(datas, 2, b_n, b_c, b_p, m[2], SymbolicClassifier(), params, 10))
+        f.write(crossvalidation_compare(datas, 2, b_n, b_c, b_p, m[2], SymbolicClassifier(), params, 10))
     # symbolic weighted + negation
     for m in methods:
         print "Symbolic Binary"
         (b_n, b_c, b_p) = baselines[1]
         params = {"bin": False, "lexicon": lexicon, "neg_scope": m[0], "scope_arg": m[1], "neg_words": negation_terms}
-        f.write(crossvalidation_compare_proper(datas, 2, b_n, b_c, b_p, m[2], SymbolicClassifier(), params, 10))
+        f.write(crossvalidation_compare(datas, 2, b_n, b_c, b_p, m[2], SymbolicClassifier(), params, 10))
 
     (b_n, b_c, b_p) = baselines[2]
 
@@ -75,14 +75,14 @@ with open("result{}.txt".format(time.time()), 'w+') as f:
         print "Running with simple negation: {}".format(m[2])
         params = {"smooth": 0.2, "neg_scope": m[0], "scope_arg": m[1], "neg_words": negation_terms, "augment": False}
         f.write(
-            crossvalidation_compare_proper(datas, 2, b_n, b_c, b_p, "{}_simple".format(m[2]), NaiveBayesNeg(), params,
-                                           10))
+            crossvalidation_compare(datas, 2, b_n, b_c, b_p, "{}_simple".format(m[2]), NaiveBayesNeg(), params,
+                                    10))
     # NB + augmented negation
     for m in methods:
         print "Running with augmented nagation: {}".format(m[2])
         params = {"smooth": 0.2, "neg_scope": m[0], "scope_arg": m[1], "neg_words": negation_terms, "augment": True}
-        f.write(crossvalidation_compare_proper(datas, 2, b_n, b_c, b_p, "{}_augmented".format(m[2]), NaiveBayesNeg(),
-                                               params, 10))
+        f.write(crossvalidation_compare(datas, 2, b_n, b_c, b_p, "{}_augmented".format(m[2]), NaiveBayesNeg(),
+                                        params, 10))
 
     # augmented negation vs augmented negation + stoplist
     for m in methods:
@@ -91,5 +91,5 @@ with open("result{}.txt".format(time.time()), 'w+') as f:
         params_2 = {"smooth": 0.2, "neg_scope": m[0], "scope_arg": m[1], "neg_words": negation_terms, "augment": True,
                     "stopwords": True}
         f.write(
-            crossvalidation_compare_proper(datas, 2, "{}_augmented_stopwords".format(m[2]), NaiveBayesNeg(), params_2,
+            crossvalidation_compare(datas, 2, "{}_augmented_stopwords".format(m[2]), NaiveBayesNeg(), params_2,
                                            "{}_augmented".format(m[2]), NaiveBayesNeg(), params, 10))
