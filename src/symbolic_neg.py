@@ -1,5 +1,6 @@
 import os
 
+
 def compute_negation_terms():
     list = []
     with open(os.path.abspath("../data/negation.txt")) as f:
@@ -60,7 +61,11 @@ def compute_stopwords_list():
 # def flip_after_x(tokens, lexicon, neg_words, scope_size=1, bin=True, stemmed=False):
 #     return compute_score_document(tokens, compute_neg_after_x(tokens, neg_words, scope_size), lexicon, bin, stemmed)
 
-
+# Symbolic approach  with negation - NB without negation can be instantiated from this by giving
+# neg_scope: a function that takes an array of tokens, and returns an array of False(as in, not negated),
+# whose length is the same as the input array
+# scope_arg: []
+# Specify binary / weighted by giving "bin": boolean as a part of param
 class SymbolicClassifier(object):
     def __init__(self):
         pass
@@ -87,11 +92,12 @@ class SymbolicClassifier(object):
                 else:
                     score += entry.sentiment_score * entry.weight * neg_weight
             except KeyError:
-               continue
+                continue
         if score >= 0:
             return 0
         else:
             return 1
+
 #
 # def compute_score_sentence(tokens, neg_array, lexicon, bin, stemmed):
 #     assert len(tokens) == len(neg_array)

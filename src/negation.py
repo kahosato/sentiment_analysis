@@ -1,8 +1,5 @@
 import Queue
 
-import time
-
-import spacy
 from nltk import Tree
 from nltk.parse.stanford import StanfordDependencyParser
 from spacy.symbols import ccomp, dobj, acomp

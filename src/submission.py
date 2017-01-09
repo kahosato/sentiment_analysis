@@ -92,4 +92,4 @@ with open("result{}.txt".format(time.time()), 'w+') as f:
                     "stopwords": True}
         f.write(
             crossvalidation_compare(datas, 2, "{}_augmented_stopwords".format(m[2]), NaiveBayesNeg(), params_2,
-                                           "{}_augmented".format(m[2]), NaiveBayesNeg(), params, 10))
+                                    "{}_augmented".format(m[2]), NaiveBayesNeg(), params, 10))

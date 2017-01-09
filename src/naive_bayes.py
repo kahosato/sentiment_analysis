@@ -1,13 +1,9 @@
-import os
 from decimal import Decimal
 
-from stemming.porter2 import stem
-
-import crossvalidation
-from tokeniser import Tokeniser
-from tokens import PunctuationToken, WordToken
+from tokens import PunctuationToken
 
 
+# NaiveBayes without any negation
 class NaiveBayes(object):
     __smooth_constant = 1
 

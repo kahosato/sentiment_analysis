@@ -1,16 +1,14 @@
-import os
 from decimal import Decimal
 
-import spacy
-from stemming.porter2 import stem
-
-import crossvalidation
-from negation import compute_neg_punc, compute_neg_head_obj
-from symbolic_neg import compute_negation_terms, compute_stopwords_list
-from tokeniser import Tokeniser
+from negation import compute_neg_punc
+from symbolic_neg import compute_stopwords_list
 from tokens import PunctuationToken, WordToken
 
 
+# NB with negation - NB without negation can be instantiated from this by giving
+# neg_scope: a function that takes an array of tokens, and returns an array of False(as in, not negated),
+# whose length is the same as the input array
+# scope_arg: []
 class NaiveBayesNeg(object):
     __smooth_constant = 1
 
@@ -46,18 +44,7 @@ class NaiveBayesNeg(object):
         # total_tokens[i] - increment for each token
         # vocabs[i][token] - 1 if unseen, increment if seen
         # vocab_sizes - increment for each unseen token
-        # TODO HERE
 
-        # if params["stemmed"]:
-        #     stemmed = []
-        #     for (tokens, label) in training_docs:
-        #         stemmed_tokens = []
-        #         for token in tokens:
-        #             if isinstance(token, WordToken):
-        #                 token = WordToken(stem(token.value))
-        #             stemmed_tokens.append(token)
-        #         stemmed.append((stemmed_tokens, label))
-        #     training_docs = stemmed
         for tokens, label in training_docs:
             vocab = vocabs[label]
             count_docs_per_class[label] += 1
@@ -69,7 +56,7 @@ class NaiveBayesNeg(object):
                 if isinstance(token, PunctuationToken):
                     continue
                 if use_stopwords and token.value in stopwords:
-                        continue
+                    continue
                 negated = neg_array[i]
                 if negated:
                     neg_token = token
@@ -133,9 +120,6 @@ class NaiveBayesNeg(object):
 
         for j in xrange(0, len(tokens)):
             token = tokens[j]
-            # if params["stemmed"]:
-            #     if isinstance(token, WordToken):
-            #         token = WordToken(stem(token.value))
             if isinstance(token, PunctuationToken):
                 continue
             if use_stopwords and token.value in stopwords:
