@@ -114,16 +114,3 @@ class NaiveBayes(object):
                 best_class = i
                 best_prob = prob
         return best_class
-
-
-if __name__ == "__main__":
-    pos_path = os.path.abspath("../data/POS")
-    pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
-    neg_path = os.path.abspath("../data/NEG")
-    neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
-    dataset = [pos_files, neg_files]
-    datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, 2) for data in dataset[label]]
-    result = crossvalidation.crossvalidation_compare(datas, 2, "0", NaiveBayes(), {"smooth":0}, "nom", NaiveBayes(),
-                                            {"smooth": 0.2}, fold=10)
-    print result
-    print sum(result) / len(result)

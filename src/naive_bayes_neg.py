@@ -5,7 +5,7 @@ import spacy
 from stemming.porter2 import stem
 
 import crossvalidation
-from negation import compute_neg_punc, compute_neg_obj
+from negation import compute_neg_punc, compute_neg_head_obj
 from symbolic_neg import compute_negation_terms, compute_stopwords_list
 from tokeniser import Tokeniser
 from tokens import PunctuationToken, WordToken
@@ -174,29 +174,3 @@ class NaiveBayesNeg(object):
                 best_class = i
                 best_prob = prob
         return best_class
-
-
-if __name__ == "__main__":
-    pos_path = os.path.abspath("../data/POS")
-    pos_files = [os.path.join(pos_path, f) for f in os.listdir(pos_path)]
-    neg_path = os.path.abspath("../data/NEG")
-    neg_files = [os.path.join(neg_path, f) for f in os.listdir(neg_path)]
-    nlp = spacy.load('en')
-    print "loaded"
-    dataset = [pos_files, neg_files]
-    datas = [(list(Tokeniser.tokenise(data)), label) for label in xrange(0, 2) for data in dataset[label]]
-    result = crossvalidation.crossvalidation_compare_proper(datas, 2, "stemmed", NaiveBayesNeg(),
-                                                     {"smooth": 0.2, "neg_scope": lambda x, y: [False] * len(x), "scope_arg": [],
-                                                     "neg_words": compute_negation_terms(), "stemmed": True,
-                                                     "augment": False},
-                                                     "not stemmed", NaiveBayesNeg(), {"smooth": 0.2, "neg_scope": lambda x, y: [False] * len(x), "scope_arg": [],
-                                                     "neg_words": compute_negation_terms(), "stemmed": False,
-                                                     "augment": False})
-    print result
-    print sum(result) / len(result)
-
-
-    # 0.615 x 1 with adding NOT token to the other class
-    # 0.7985 x 1 without
-    # 0.8005 x 5 without
-    # 0.803 punc without

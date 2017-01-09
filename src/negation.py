@@ -58,21 +58,6 @@ def compute_neg_dir_dep(tokens, neg_words, nlp):
     neg_array = []
     negated = set()
     old_tokenizer = nlp.tokenizer
-    # for i in xrange(0, len(tokens)):
-    #     token = tokens[i]
-    #     sentence.append(token)
-    #     if token in [PunctuationToken("."), PunctuationToken("?"), PunctuationToken("!")]:
-    #         u_sentence = lambda x: map(lambda t: unicode(t.value, "utf-8"), sentence)
-    #         nlp.tokenizer = lambda ts: old_tokenizer.tokens_from_list(u_sentence(ts))
-    #         text = unicode(" ".join(map(lambda t: t.value, sentence)), "utf-8")
-    #         doc = nlp(text)
-    #         for w in doc:
-    #             if w.text in neg_words:
-    #                 negated.append(w.head.i)
-    #         for j in xrange(0, len(sentence)):
-    #             neg_array.append(j in negated)
-    #         sentence = []
-    #         negated = []
     u_tokens = lambda x: map(lambda t: unicode(t.value, "utf-8"), tokens)
     nlp.tokenizer = lambda ts: old_tokenizer.tokens_from_list(u_tokens(ts))
     text = unicode(" ".join(map(lambda t: t.value, tokens)), "utf-8")
